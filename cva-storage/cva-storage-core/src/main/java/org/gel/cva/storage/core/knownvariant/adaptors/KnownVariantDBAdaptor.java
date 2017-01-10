@@ -1,6 +1,6 @@
-package org.gel.cva.storage.core.curatedvariant.adaptors;
+package org.gel.cva.storage.core.knownvariant.adaptors;
 
-import org.opencb.biodata.models.variant.CuratedVariant;
+import org.opencb.biodata.models.variant.KnownVariant;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
@@ -10,7 +10,7 @@ import java.util.List;
  * Created by priesgo on 07/01/17.
  */
 //TODO: extend Iterable<CuratedVariant>
-public interface CuratedVariantDBAdaptor extends AutoCloseable {
+public interface KnownVariantDBAdaptor extends AutoCloseable {
 
     /**
      * This method inserts a single CuratedVariant in the database. If the variant already exists... throw error?
@@ -19,7 +19,7 @@ public interface CuratedVariantDBAdaptor extends AutoCloseable {
      * @param options   Query modifiers, accepted values are: include, exclude, limit, skip, sort and count
      * @return A QueryResult with the number of inserted variants
      */
-    QueryResult insert(CuratedVariant curatedVariant, QueryOptions options);
+    QueryResult insert(KnownVariant curatedVariant, QueryOptions options);
 
     /**
      * This method inserts CuratedVariants in the database. If the variant already exists... throw error?
@@ -28,6 +28,6 @@ public interface CuratedVariantDBAdaptor extends AutoCloseable {
      * @param options   Query modifiers, accepted values are: include, exclude, limit, skip, sort and count
      * @return A QueryResult with the number of inserted variants
      */
-    QueryResult insert(List<CuratedVariant> curatedVariants, QueryOptions options);
+    QueryResult insert(List<KnownVariant> curatedVariants, QueryOptions options);
 
 }

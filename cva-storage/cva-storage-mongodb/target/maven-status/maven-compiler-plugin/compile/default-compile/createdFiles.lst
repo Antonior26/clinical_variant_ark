@@ -1,3 +1,3 @@
-org/gel/cva/storage/mongodb/curatedvariant/tools/ClinVarLoader.class
-org/gel/cva/storage/mongodb/curatedvariant/converters/DocumentToCuratedVariantConverter.class
-org/gel/cva/storage/mongodb/curatedvariant/adaptors/CuratedVariantMongoDBAdaptor.class
+org/gel/cva/storage/mongodb/knownvariant/adaptors/KnownVariantMongoDBAdaptor.class
+org/gel/cva/storage/mongodb/knownvariant/converters/DocumentToKnownVariantConverter.class
+org/gel/cva/storage/mongodb/knownvariant/tools/ClinVarLoader.class

@@ -1,4 +1,4 @@
-package org.gel.cva.storage.mongodb.curatedvariant.adaptors;
+package org.gel.cva.storage.mongodb.knownvariant.adaptors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -12,12 +12,12 @@ import java.util.List;
 /**
  * Created by priesgo on 07/01/17.
  */
-public class CuratedVariantMongoDBAdapterTest {
+public class KnownVariantMongoDBAdapterTest {
 
     private MongoCredentials mongoCredentials;
     private VariantFactory factory;
     private VariantSource source;
-    private CuratedVariantMongoDBAdaptor curatedVariantMongoDBAdaptor;
+    private KnownVariantMongoDBAdaptor curatedVariantMongoDBAdaptor;
 
     @Before
     public void setUp() throws Exception {
@@ -36,7 +36,7 @@ public class CuratedVariantMongoDBAdapterTest {
                 "fileId",
                 "studyId",
                 "studyName");
-        this.curatedVariantMongoDBAdaptor = new CuratedVariantMongoDBAdaptor(
+        this.curatedVariantMongoDBAdaptor = new KnownVariantMongoDBAdaptor(
                 this.mongoCredentials,
                 "curated_variants");
     }

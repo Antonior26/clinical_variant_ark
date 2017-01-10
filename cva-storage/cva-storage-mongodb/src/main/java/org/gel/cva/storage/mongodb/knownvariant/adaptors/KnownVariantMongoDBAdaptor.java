@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package org.gel.cva.storage.mongodb.curatedvariant.adaptors;
+package org.gel.cva.storage.mongodb.knownvariant.adaptors;
 
 
 import org.bson.Document;
-import org.gel.cva.storage.mongodb.curatedvariant.converters.DocumentToCuratedVariantConverter;
-import org.opencb.biodata.models.variant.CuratedVariant;
+import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToKnownVariantConverter;
+import org.opencb.biodata.models.variant.KnownVariant;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 import org.opencb.commons.io.DataWriter;
-import org.gel.cva.storage.core.curatedvariant.adaptors.CuratedVariantDBAdaptor;
+import org.gel.cva.storage.core.knownvariant.adaptors.KnownVariantDBAdaptor;
 import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;
 import org.opencb.opencga.storage.mongodb.variant.converters.*;
 import org.slf4j.Logger;
@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author Jacobo Coll <jacobo167@gmail.com>
  * @author Cristina Yenyxe Gonzalez Garcia <cyenyxe@ebi.ac.uk>
  */
-public class CuratedVariantMongoDBAdaptor implements CuratedVariantDBAdaptor {
+public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
 
     private boolean closeConnection;
     private final MongoDataStoreManager mongoManager;
@@ -55,13 +55,13 @@ public class CuratedVariantMongoDBAdaptor implements CuratedVariantDBAdaptor {
     @Deprecated
     private DataWriter dataWriter;
 
-    protected static Logger logger = LoggerFactory.getLogger(CuratedVariantMongoDBAdaptor.class);
+    protected static Logger logger = LoggerFactory.getLogger(KnownVariantMongoDBAdaptor.class);
 
     // Number of opened dbAdaptors
     public static final AtomicInteger NUMBER_INSTANCES = new AtomicInteger(0);
 
 
-    public CuratedVariantMongoDBAdaptor(MongoCredentials credentials, String curatedVariantsCollectionName)
+    public KnownVariantMongoDBAdaptor(MongoCredentials credentials, String curatedVariantsCollectionName)
             throws UnknownHostException {
         this(new MongoDataStoreManager(
                 credentials.getDataStoreServerAddresses()), credentials, curatedVariantsCollectionName);
@@ -69,8 +69,8 @@ public class CuratedVariantMongoDBAdaptor implements CuratedVariantDBAdaptor {
     }
 
 
-    public CuratedVariantMongoDBAdaptor(MongoDataStoreManager mongoManager, MongoCredentials credentials,
-                                 String curatedVariantsCollectionName)
+    public KnownVariantMongoDBAdaptor(MongoDataStoreManager mongoManager, MongoCredentials credentials,
+                                      String curatedVariantsCollectionName)
             throws UnknownHostException {
         // MongoDB configuration
         this.closeConnection = false;
@@ -84,9 +84,9 @@ public class CuratedVariantMongoDBAdaptor implements CuratedVariantDBAdaptor {
 
 
     @Override
-    public QueryResult insert(CuratedVariant curatedVariant, QueryOptions options) {
+    public QueryResult insert(KnownVariant curatedVariant, QueryOptions options) {
         // Creates a set of converters
-        DocumentToCuratedVariantConverter curatedVariantConverter = new DocumentToCuratedVariantConverter(
+        DocumentToKnownVariantConverter curatedVariantConverter = new DocumentToKnownVariantConverter(
                 new DocumentToVariantConverter(null, null)
         );
         Document curatedVariantDocument = curatedVariantConverter.convertToStorageType(curatedVariant);
@@ -97,7 +97,7 @@ public class CuratedVariantMongoDBAdaptor implements CuratedVariantDBAdaptor {
 
 
     @Override
-    public QueryResult insert(List<CuratedVariant> curatedVariants, QueryOptions options) {
+    public QueryResult insert(List<KnownVariant> curatedVariants, QueryOptions options) {
         //TODO: implement the insertion in batches of variants
         throw new NotImplementedException();
     }

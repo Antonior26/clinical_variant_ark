@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package org.gel.cva.storage.mongodb.curatedvariant.converters;
+package org.gel.cva.storage.mongodb.knownvariant.converters;
 
 import org.bson.Document;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.CuratedVariant;
+import org.opencb.biodata.models.variant.KnownVariant;
 import org.opencb.commons.datastore.core.ComplexTypeConverter;
 import org.opencb.opencga.storage.mongodb.variant.converters.DocumentToVariantConverter;
 
@@ -27,7 +27,7 @@ import java.util.*;
 /**
  * @author Cristina Yenyxe Gonzalez Garcia <cyenyxe@ebi.ac.uk>
  */
-public class DocumentToCuratedVariantConverter implements ComplexTypeConverter<CuratedVariant, Document> {
+public class DocumentToKnownVariantConverter implements ComplexTypeConverter<KnownVariant, Document> {
 
     public static final String VARIANT = "variant";
     public static final String CLASSIFICATION = "classification";
@@ -39,25 +39,25 @@ public class DocumentToCuratedVariantConverter implements ComplexTypeConverter<C
     private final DocumentToVariantConverter variantConverter;
 
     /**
-     * Create a converter between {@link CuratedVariant} and {@link Document} entities
+     * Create a converter between {@link KnownVariant} and {@link Document} entities
      */
-    public DocumentToCuratedVariantConverter() {
+    public DocumentToKnownVariantConverter() {
         this(null);
     }
 
 
     /**
-     * Create a converter between {@link CuratedVariant} and {@link Document} entities.
+     * Create a converter between {@link KnownVariant} and {@link Document} entities.
      *
      * @param variantConverter The object used to convert the files
      */
-    public DocumentToCuratedVariantConverter(DocumentToVariantConverter variantConverter) {
+    public DocumentToKnownVariantConverter(DocumentToVariantConverter variantConverter) {
         this.variantConverter = variantConverter;
     }
 
 
     @Override
-    public CuratedVariant convertToDataModelType(Document object) {
+    public KnownVariant convertToDataModelType(Document object) {
         //TODO: should we inherit the variant id in the CuratedVariant????
 
         Document variantDocument = (Document) object.get(VARIANT);
@@ -69,14 +69,14 @@ public class DocumentToCuratedVariantConverter implements ComplexTypeConverter<C
 
         Variant variant = variantConverter.convertToDataModelType(variantDocument);
         //TODO: create converters and convert history, evidences and comments
-        CuratedVariant curatedVariant = new CuratedVariant(
+        KnownVariant curatedVariant = new KnownVariant(
                 variant, classification, score, null, null, null);
 
         return curatedVariant;
     }
 
     @Override
-    public Document convertToStorageType(CuratedVariant curatedVariant) {
+    public Document convertToStorageType(KnownVariant curatedVariant) {
 
         Variant variant = curatedVariant.getVariant();
         Document mongoVariant = variantConverter.convertToStorageType(variant);

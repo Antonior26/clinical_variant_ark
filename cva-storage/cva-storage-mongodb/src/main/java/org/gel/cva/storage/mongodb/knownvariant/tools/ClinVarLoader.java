@@ -1,7 +1,7 @@
-package org.gel.cva.storage.mongodb.curatedvariant.tools;
+package org.gel.cva.storage.mongodb.knownvariant.tools;
 
 import com.mongodb.MongoWriteException;
-import org.gel.cva.storage.mongodb.curatedvariant.adaptors.CuratedVariantMongoDBAdaptor;
+import org.gel.cva.storage.mongodb.knownvariant.adaptors.KnownVariantMongoDBAdaptor;
 import org.opencb.biodata.models.variant.*;
 import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
 import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
@@ -81,7 +81,7 @@ public class ClinVarLoader {
                 false
         );
 
-        CuratedVariantMongoDBAdaptor curatedVariantMongoDBAdaptor = new CuratedVariantMongoDBAdaptor(
+        KnownVariantMongoDBAdaptor curatedVariantMongoDBAdaptor = new KnownVariantMongoDBAdaptor(
                 mongoCredentials,
                 "curated_variants");
 
@@ -121,7 +121,7 @@ public class ClinVarLoader {
                 String clinicalRevisionStatus = (String) annotations.get("CLNREVSTAT");
 
                 // Creates a curated variant
-                CuratedVariant curatedVariant = new CuratedVariant(variant);
+                KnownVariant curatedVariant = new KnownVariant(variant);
                 curatedVariant.setCurationClassification(getCurationClassificationFromClinicalsignificance(clinicalSignificance));
                 curatedVariant.setCurationScore(getCurationScoreFromRevisionStatus(clinicalRevisionStatus));
                 // Inserts in Mongo
