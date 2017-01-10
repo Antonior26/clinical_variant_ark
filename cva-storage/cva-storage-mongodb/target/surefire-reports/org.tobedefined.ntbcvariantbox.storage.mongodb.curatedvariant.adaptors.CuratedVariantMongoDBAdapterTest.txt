@@ -1,0 +1,8 @@
+-------------------------------------------------------------------------------
+Test set: org.tobedefined.ntbcvariantbox.storage.mongodb.curatedvariant.adaptors.CuratedVariantMongoDBAdapterTest
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 30.961 sec <<< FAILURE! - in org.tobedefined.ntbcvariantbox.storage.mongodb.curatedvariant.adaptors.CuratedVariantMongoDBAdapterTest
+testSimpleInsert(org.tobedefined.ntbcvariantbox.storage.mongodb.curatedvariant.adaptors.CuratedVariantMongoDBAdapterTest)  Time elapsed: 30.862 sec  <<< ERROR!
+com.mongodb.MongoTimeoutException: Timed out after 30000 ms while waiting for a server that matches WritableServerSelector. Client view of cluster state is {type=UNKNOWN, servers=[{address=127.0.0.1:27017, type=UNKNOWN, state=CONNECTING, exception={com.mongodb.MongoSecurityException: Exception authenticating MongoCredential{mechanism=SCRAM-SHA-1, userName='test', source='', password=<hidden>, mechanismProperties={}}}, caused by {com.mongodb.MongoCommandException: Command failed with error 73: 'Invalid database name: ''' on server 127.0.0.1:27017. The full response is { "ok" : 0.0, "errmsg" : "Invalid database name: ''", "code" : 73, "codeName" : "InvalidNamespace" }}}]
+	at org.tobedefined.ntbcvariantbox.storage.mongodb.curatedvariant.adaptors.CuratedVariantMongoDBAdapterTest.testSimpleInsert(CuratedVariantMongoDBAdapterTest.java:53)
+
