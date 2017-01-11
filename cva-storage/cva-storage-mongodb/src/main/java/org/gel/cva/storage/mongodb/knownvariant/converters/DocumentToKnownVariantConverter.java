@@ -18,7 +18,7 @@ package org.gel.cva.storage.mongodb.knownvariant.converters;
 
 import org.bson.Document;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.KnownVariant;
+import org.gel.cva.models.dto.KnownVariant;
 import org.opencb.commons.datastore.core.ComplexTypeConverter;
 import org.opencb.opencga.storage.mongodb.variant.converters.DocumentToVariantConverter;
 

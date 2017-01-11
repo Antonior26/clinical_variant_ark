@@ -2,7 +2,10 @@ package org.gel.cva.storage.mongodb.knownvariant.tools;
 
 import com.mongodb.MongoWriteException;
 import org.gel.cva.storage.mongodb.knownvariant.adaptors.KnownVariantMongoDBAdaptor;
-import org.opencb.biodata.models.variant.*;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.VariantSource;
+import org.opencb.biodata.models.variant.VariantStudy;
+import org.gel.cva.models.dto.KnownVariant;
 import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
 import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
 import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;

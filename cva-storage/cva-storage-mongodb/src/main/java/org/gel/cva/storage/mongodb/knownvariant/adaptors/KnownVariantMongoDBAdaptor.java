@@ -19,7 +19,7 @@ package org.gel.cva.storage.mongodb.knownvariant.adaptors;
 
 import org.bson.Document;
 import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToKnownVariantConverter;
-import org.opencb.biodata.models.variant.KnownVariant;
+import org.gel.cva.models.dto.KnownVariant;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;

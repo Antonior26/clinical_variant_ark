@@ -1,6 +1,6 @@
 package org.gel.cva.storage.core.knownvariant.adaptors;
 
-import org.opencb.biodata.models.variant.KnownVariant;
+import org.gel.cva.models.dto.KnownVariant;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
