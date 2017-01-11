@@ -1,3 +1,4 @@
+*.class
 .idea
-ntbcvariantbox-storage/ntbcvariantbox-storage-core/target
-ntbcvariantbox-storage/ntbcvariantbox-storage-mongodb/target
+cva-storage/cva-storage-core/target
+cva-storage/cva-storage-mongodb/target
