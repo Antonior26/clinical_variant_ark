@@ -1,3 +1,0 @@
-org/gel/cva/storage/mongodb/knownvariant/adaptors/KnownVariantMongoDBAdaptor.class
-org/gel/cva/storage/mongodb/knownvariant/converters/DocumentToKnownVariantConverter.class
-org/gel/cva/storage/mongodb/knownvariant/tools/ClinVarLoader.class
