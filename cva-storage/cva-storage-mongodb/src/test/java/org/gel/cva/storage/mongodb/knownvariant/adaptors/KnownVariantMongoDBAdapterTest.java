@@ -2,7 +2,12 @@ package org.gel.cva.storage.mongodb.knownvariant.adaptors;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.opencb.biodata.models.variant.*;
+import org.gel.cva.models.dto.KnownVariant;
+import org.opencb.biodata.models.variant.VariantSource;
+import org.opencb.biodata.models.variant.VariantFactory;
+import org.opencb.biodata.models.variant.VariantVcfFactory;
+import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.StudyEntry;
 import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;
 
 import java.util.Collections;
@@ -50,8 +55,8 @@ public class KnownVariantMongoDBAdapterTest {
         result.stream().forEach(variant -> variant.setStudies(Collections.<StudyEntry>emptyList()));
 
         Variant variant = result.get(0);
-        CuratedVariant curatedVariant = new CuratedVariant(variant);
-        this.curatedVariantMongoDBAdaptor.insert(curatedVariant, null);
+        KnownVariant knownVariant = new KnownVariant(variant);
+        this.curatedVariantMongoDBAdaptor.insert(knownVariant, null);
     }
 
 }
