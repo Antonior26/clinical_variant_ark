@@ -42,12 +42,13 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
 
     private final DocumentToVariantConverter variantConverter;
     private final DocumentToEvidenceEntryConverter evidenceEntryConverter;
+    private final DocumentToCommentConverter commentConverter;
 
     /**
      * Create a converter between {@link KnownVariant} and {@link Document} entities
      */
     public DocumentToKnownVariantConverter() {
-        this(null, null);
+        this(null, null, null);
     }
 
 
@@ -57,9 +58,11 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
      * @param variantConverter The object used to convert the files
      */
     public DocumentToKnownVariantConverter(DocumentToVariantConverter variantConverter,
-                                           DocumentToEvidenceEntryConverter evidenceEntryConverter) {
+                                           DocumentToEvidenceEntryConverter evidenceEntryConverter,
+                                           DocumentToCommentConverter commentConverter) {
         this.variantConverter = variantConverter;
         this.evidenceEntryConverter = evidenceEntryConverter;
+        this.commentConverter = commentConverter;
     }
 
 
@@ -87,9 +90,9 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
         // Converts comments
         List<Comment> comments = new LinkedList<Comment>();
         for (Document commentsDoc: commentsDocs) {
-            //evidences.add(this.evidenceEntryConverter.convertToDataModelType(evidenceEntry));
+            comments.add(this.commentConverter.convertToDataModelType(commentsDoc));
         }
-        //TODO: create converters and convert history and comments
+        //TODO: create converters and convert history
         KnownVariant curatedVariant = new KnownVariant(
                 variant, classification, score, curationHistory, evidences, comments);
         return curatedVariant;
@@ -129,8 +132,7 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
         if (curatedVariant.getComments() != null && curatedVariant.getComments().size() > 0) {
 
             for (Comment comment: (List<Comment>) curatedVariant.getComments()) {
-                //curationHistory.add(this.curationHistoryEntryConverter.convertToStorageType(curationHistoryEntry));
-                //TODO: use converter
+                comments.add(this.commentConverter.convertToStorageType(comment));
             }
         }
         mongoCuratedVariant.append(COMMENTS, comments);

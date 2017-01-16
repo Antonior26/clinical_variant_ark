@@ -18,6 +18,7 @@ package org.gel.cva.storage.mongodb.knownvariant.adaptors;
 
 
 import org.bson.Document;
+import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToCommentConverter;
 import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToEvidenceEntryConverter;
 import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToKnownVariantConverter;
 import org.gel.cva.dto.KnownVariant;
@@ -87,9 +88,11 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
     @Override
     public QueryResult insert(KnownVariant curatedVariant, QueryOptions options) {
         // Creates a set of converters
+        DocumentToCommentConverter commentConverter = new DocumentToCommentConverter();
         DocumentToKnownVariantConverter curatedVariantConverter = new DocumentToKnownVariantConverter(
                 new DocumentToVariantConverter(null, null),
-                new DocumentToEvidenceEntryConverter()
+                new DocumentToEvidenceEntryConverter(commentConverter),
+                commentConverter
         );
         Document curatedVariantDocument = curatedVariantConverter.convertToStorageType(curatedVariant);
         QueryResult result = this.curatedVariantsCollection.insert(curatedVariantDocument, options);

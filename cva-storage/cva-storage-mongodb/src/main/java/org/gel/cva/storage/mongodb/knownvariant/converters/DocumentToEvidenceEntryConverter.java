@@ -45,12 +45,15 @@ public class DocumentToEvidenceEntryConverter implements ComplexTypeConverter<Ev
     public static final String PHENOTYPES = "phenotypes";
     public static final String PHENOTYPE = "phenotype";
     public static final String INHERITANCE_MODE = "inheritanceMode";
+    public static final String COMMENTS = "comments";
+
+    private static DocumentToCommentConverter commentConverter;
 
     /**
      * Create a converter between {@link KnownVariant} and {@link Document} entities
      */
-    public DocumentToEvidenceEntryConverter() {
-
+    public DocumentToEvidenceEntryConverter(DocumentToCommentConverter commentConverter) {
+        this.commentConverter = commentConverter;
     }
 
 
@@ -79,7 +82,14 @@ public class DocumentToEvidenceEntryConverter implements ComplexTypeConverter<Ev
             phenotypes.add(evidencePhenotype);
         }
         evidenceEntry.setPhenotypes(phenotypes);
-        //TODO: add conversion of list of comments
+        // Parses comments
+        List<Document> commentsDocs = (List<Document>) object.get(COMMENTS);
+        List<Comment> comments = new LinkedList<Comment>();
+        for (Document commentDoc: commentsDocs) {
+            Comment comment = commentConverter.convertToDataModelType(commentDoc);
+            comments.add(comment);
+        }
+        evidenceEntry.setComments(comments);
         return evidenceEntry;
     }
 
@@ -116,6 +126,7 @@ public class DocumentToEvidenceEntryConverter implements ComplexTypeConverter<Ev
         if (evidenceEntry.getUrl() != null) {
             mongoEvidenceEntry.append(URL, evidenceEntry.getUrl());
         }
+        // Parses phenotypes
         if (evidenceEntry.getPhenotypes() != null) {
             List<EvidencePhenotype> phenotypes = evidenceEntry.getPhenotypes();
             List<Document> phenotypesDocs = new LinkedList<Document>();
@@ -127,7 +138,15 @@ public class DocumentToEvidenceEntryConverter implements ComplexTypeConverter<Ev
             }
             mongoEvidenceEntry.append(PHENOTYPES, phenotypesDocs);
         }
-        //TODO: add conversion of list of comments
+        // Parses comments
+        if (evidenceEntry.getComments() != null) {
+            List<Comment> comments = evidenceEntry.getComments();
+            List<Document> commentsDocs = new LinkedList<Document>();
+            for (Comment comment: comments) {
+                commentsDocs.add(commentConverter.convertToStorageType(comment));
+            }
+            mongoEvidenceEntry.append(COMMENTS, commentsDocs);
+        }
         return mongoEvidenceEntry;
     }
 
