@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 OpenCB
+ * Copyright 2017 Genomics England Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,9 @@ package org.gel.cva.storage.mongodb.knownvariant.adaptors;
 
 
 import org.bson.Document;
+import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToEvidenceEntryConverter;
 import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToKnownVariantConverter;
-import org.gel.cva.models.dto.KnownVariant;
+import org.gel.cva.dto.KnownVariant;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
@@ -87,7 +88,8 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
     public QueryResult insert(KnownVariant curatedVariant, QueryOptions options) {
         // Creates a set of converters
         DocumentToKnownVariantConverter curatedVariantConverter = new DocumentToKnownVariantConverter(
-                new DocumentToVariantConverter(null, null)
+                new DocumentToVariantConverter(null, null),
+                new DocumentToEvidenceEntryConverter()
         );
         Document curatedVariantDocument = curatedVariantConverter.convertToStorageType(curatedVariant);
         QueryResult result = this.curatedVariantsCollection.insert(curatedVariantDocument, options);

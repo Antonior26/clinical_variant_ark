@@ -1,5 +1,5 @@
 /*
- * Copyright 2015-2016 OpenCB
+ * Copyright 2017 Genomics England Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,15 +17,19 @@
 package org.gel.cva.storage.mongodb.knownvariant.converters;
 
 import org.bson.Document;
+import org.gel.models.cva.avro.Comment;
+import org.gel.models.cva.avro.CurationHistoryEntry;
+import org.gel.models.cva.avro.EvidenceEntry;
 import org.opencb.biodata.models.variant.Variant;
-import org.gel.cva.models.dto.KnownVariant;
+import org.gel.cva.dto.KnownVariant;
 import org.opencb.commons.datastore.core.ComplexTypeConverter;
 import org.opencb.opencga.storage.mongodb.variant.converters.DocumentToVariantConverter;
+import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToEvidenceEntryConverter;
 
 import java.util.*;
 
 /**
- * @author Cristina Yenyxe Gonzalez Garcia <cyenyxe@ebi.ac.uk>
+ * @author Pablo Riesgo Ferreiro <pablo.ferreiro@genomicsengland.co.uk>
  */
 public class DocumentToKnownVariantConverter implements ComplexTypeConverter<KnownVariant, Document> {
 
@@ -37,12 +41,13 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
     public static final String COMMENTS = "comments";
 
     private final DocumentToVariantConverter variantConverter;
+    private final DocumentToEvidenceEntryConverter evidenceEntryConverter;
 
     /**
      * Create a converter between {@link KnownVariant} and {@link Document} entities
      */
     public DocumentToKnownVariantConverter() {
-        this(null);
+        this(null, null);
     }
 
 
@@ -51,27 +56,42 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
      *
      * @param variantConverter The object used to convert the files
      */
-    public DocumentToKnownVariantConverter(DocumentToVariantConverter variantConverter) {
+    public DocumentToKnownVariantConverter(DocumentToVariantConverter variantConverter,
+                                           DocumentToEvidenceEntryConverter evidenceEntryConverter) {
         this.variantConverter = variantConverter;
+        this.evidenceEntryConverter = evidenceEntryConverter;
     }
 
 
     @Override
     public KnownVariant convertToDataModelType(Document object) {
         //TODO: should we inherit the variant id in the CuratedVariant????
-
         Document variantDocument = (Document) object.get(VARIANT);
         String classification = (String) object.get(CLASSIFICATION);
         Integer score = (Integer) object.get(SCORE);
-        List history = object.get(HISTORY, List.class);
-        List evidences = object.get(EVIDENCES, List.class);
-        List comments = object.get(COMMENTS, List.class);
-
+        List<Document> historyDocs = object.get(HISTORY, List.class);
+        List<Document> evidencesDocs = object.get(EVIDENCES, List.class);
+        List<Document> commentsDocs = object.get(COMMENTS, List.class);
+        // Converts Variant
         Variant variant = variantConverter.convertToDataModelType(variantDocument);
-        //TODO: create converters and convert history, evidences and comments
+        // Converts list of evidences
+        List<EvidenceEntry> evidences = new LinkedList<EvidenceEntry>();
+        for (Document evidencesDoc: evidencesDocs) {
+            evidences.add(this.evidenceEntryConverter.convertToDataModelType(evidencesDoc));
+        }
+        // Converts curation history
+        List<CurationHistoryEntry> curationHistory = new LinkedList<CurationHistoryEntry>();
+        for (Document historyDoc: historyDocs) {
+            //evidences.add(this.evidenceEntryConverter.convertToDataModelType(evidenceEntry));
+        }
+        // Converts comments
+        List<Comment> comments = new LinkedList<Comment>();
+        for (Document commentsDoc: commentsDocs) {
+            //evidences.add(this.evidenceEntryConverter.convertToDataModelType(evidenceEntry));
+        }
+        //TODO: create converters and convert history and comments
         KnownVariant curatedVariant = new KnownVariant(
-                variant, classification, score, null, null, null);
-
+                variant, classification, score, curationHistory, evidences, comments);
         return curatedVariant;
     }
 
@@ -85,12 +105,35 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
         Document mongoCuratedVariant = new Document("_id", this.variantConverter.buildStorageId(variant))
                 .append(CLASSIFICATION, curatedVariant.getCurationClassification())
                 .append(SCORE, curatedVariant.getCurationScore())
-                //TODO: convert history, evidences and comments
-                //.append(HISTORY, curatedVariant.getCurationHistory())
-                //.append(EVIDENCES, curatedVariant.getEvidences())
-                //.append(COMMENTS, curatedVariant.getComments())
                 .append(VARIANT, mongoVariant);
+        // Converts list of evidences
+        List<Document> evidences = new LinkedList<Document>();
+        if (curatedVariant.getEvidences() != null && curatedVariant.getEvidences().size() > 0) {
+            for (EvidenceEntry evidenceEntry: (List<EvidenceEntry>) curatedVariant.getEvidences()) {
+                evidences.add(this.evidenceEntryConverter.convertToStorageType(evidenceEntry));
+            }
+        }
+        mongoCuratedVariant.append(EVIDENCES, evidences);
+        // Converts history
+        List<Document> curationHistory = new LinkedList<Document>();
+        if (curatedVariant.getCurationHistory() != null && curatedVariant.getCurationHistory().size() > 0) {
 
+            for (CurationHistoryEntry curationHistoryEntry: (List<CurationHistoryEntry>) curatedVariant.getCurationHistory()) {
+                //curationHistory.add(this.curationHistoryEntryConverter.convertToStorageType(curationHistoryEntry));
+                //TODO: use converter
+            }
+        }
+        mongoCuratedVariant.append(HISTORY, curationHistory);
+        // Converts comments
+        List<Document> comments = new LinkedList<Document>();
+        if (curatedVariant.getComments() != null && curatedVariant.getComments().size() > 0) {
+
+            for (Comment comment: (List<Comment>) curatedVariant.getComments()) {
+                //curationHistory.add(this.curationHistoryEntryConverter.convertToStorageType(curationHistoryEntry));
+                //TODO: use converter
+            }
+        }
+        mongoCuratedVariant.append(COMMENTS, comments);
         return mongoCuratedVariant;
     }
 

@@ -1,11 +1,14 @@
 package org.gel.cva.storage.mongodb.knownvariant.tools;
 
 import com.mongodb.MongoWriteException;
+import org.gel.models.cva.avro.AlleleOrigin;
+import org.gel.models.cva.avro.EvidenceEntry;
+import org.gel.models.cva.avro.EvidenceSource;
 import org.gel.cva.storage.mongodb.knownvariant.adaptors.KnownVariantMongoDBAdaptor;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.models.variant.VariantStudy;
-import org.gel.cva.models.dto.KnownVariant;
+import org.gel.cva.dto.KnownVariant;
 import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
 import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
 import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;
@@ -14,6 +17,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +28,15 @@ public class ClinVarLoader {
 
     public static String getCurationClassificationFromClinicalsignificance(String clinicalSignificance) {
         String curationClassification = null;
+        // 0 - Uncertain significance,
+        // 1 - not provided,
+        // 2 - Benign,
+        // 3 - Likely benign,
+        // 4 - Likely pathogenic,
+        // 5 - Pathogenic,
+        // 6 - drug response,
+        // 7 - histocompatibility,
+        // 255 - other
         switch (clinicalSignificance) {
             case "0":
             case "1":
@@ -33,14 +46,14 @@ public class ClinVarLoader {
                 break;
             case "2":
             case "3":
-                curationClassification = "BENIGN_VARIANT";
+                curationClassification = "benign_variant";
                 break;
             case "4":
             case "5":
-                curationClassification = "DISEASE_CAUSING_VARIANT";
+                curationClassification = "disease_causing_variant";
                 break;
             case "6":
-                curationClassification = "DISEASE_ASSOCIATED_VARIANT";
+                curationClassification = "disease_associated_variant";
                 break;
         }
         return curationClassification;
@@ -48,6 +61,13 @@ public class ClinVarLoader {
 
     public static Integer getCurationScoreFromRevisionStatus(String clinicalRevisionStatus) {
         Integer curationScore = null;
+        // no_assertion - No assertion provided,
+        // no_criteria - No assertion criteria provided,
+        // single - Criteria provided single submitter,
+        // mult - Criteria provided multiple submitters no conflicts,
+        // conf - Criteria provided conflicting interpretations,
+        // exp - Reviewed by expert panel,
+        // guideline - Practice guideline
         switch (clinicalRevisionStatus) {
             case "no_assertion":
                 curationScore = 0;
@@ -70,6 +90,21 @@ public class ClinVarLoader {
                 break;
         }
         return curationScore;
+    }
+
+    public static AlleleOrigin getAlleleOriginFromSAO(String sao) {
+        AlleleOrigin alleleOrigin = AlleleOrigin.unknown;
+        switch (sao) {
+            case "0":
+                alleleOrigin = AlleleOrigin.unknown;
+            case "1":
+                alleleOrigin = AlleleOrigin.germline;
+            case "2":
+                alleleOrigin = AlleleOrigin.somatic;
+            case "3":
+                alleleOrigin = AlleleOrigin.both;
+        }
+        return alleleOrigin;
     }
 
 
@@ -103,30 +138,32 @@ public class ClinVarLoader {
                 i++;
                 System.out.println(" Processing variant = " + variant.getId());
                 Map annotations = variant.getStudies().get(0).getFiles().get(0).getAttributes();
-                // 0 - Uncertain significance,
-                // 1 - not provided,
-                // 2 - Benign,
-                // 3 - Likely benign,
-                // 4 - Likely pathogenic,
-                // 5 - Pathogenic,
-                // 6 - drug response,
-                // 7 - histocompatibility,
-                // 255 - other
                 String clinicalSignificance = (String) annotations.get("CLNSIG");
-
-                // no_assertion - No assertion provided,
-                // no_criteria - No assertion criteria provided,
-                // single - Criteria provided single submitter,
-                // mult - Criteria provided multiple submitters no conflicts,
-                // conf - Criteria provided conflicting interpretations,
-                // exp - Reviewed by expert panel,
-                // guideline - Practice guideline
                 String clinicalRevisionStatus = (String) annotations.get("CLNREVSTAT");
+                String sao = (String) annotations.get("SAO");
+                String dbsnpId = (String) annotations.get("RS");
 
+                // Creates a ClinVar adhoc evidence
+                EvidenceEntry evidenceEntry = new EvidenceEntry();
+                evidenceEntry.setSource(EvidenceSource.database);
+                evidenceEntry.setAlleleOrigin(getAlleleOriginFromSAO(sao));
+                evidenceEntry.setDatabaseName("ClinVar");
+                evidenceEntry.setVersion("20170104");
+                evidenceEntry.setSubmitter("ClinVar loader");
+                String clinVarUrl = String.format(
+                        "https://www.ncbi.nlm.nih.gov/clinvar?term=%1$s[External allele ID]", dbsnpId);
+                evidenceEntry.setUrl(clinVarUrl);
+                List<EvidenceEntry> evidences = new ArrayList<EvidenceEntry>();
+                evidences.add(evidenceEntry);
                 // Creates a curated variant
-                KnownVariant curatedVariant = new KnownVariant(variant);
-                curatedVariant.setCurationClassification(getCurationClassificationFromClinicalsignificance(clinicalSignificance));
-                curatedVariant.setCurationScore(getCurationScoreFromRevisionStatus(clinicalRevisionStatus));
+                KnownVariant curatedVariant = new KnownVariant(
+                        variant,
+                        getCurationClassificationFromClinicalsignificance(clinicalSignificance),
+                        getCurationScoreFromRevisionStatus(clinicalRevisionStatus),
+                        null,
+                        evidences,
+                        null
+                        );
                 // Inserts in Mongo
                 try {
                     curatedVariantMongoDBAdaptor.insert(curatedVariant, null);

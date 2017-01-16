@@ -2,7 +2,7 @@ package org.gel.cva.storage.mongodb.knownvariant.adaptors;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.gel.cva.models.dto.KnownVariant;
+import org.gel.cva.dto.KnownVariant;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.models.variant.VariantFactory;
 import org.opencb.biodata.models.variant.VariantVcfFactory;
