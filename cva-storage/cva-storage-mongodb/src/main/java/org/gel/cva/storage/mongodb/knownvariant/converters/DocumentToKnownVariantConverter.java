@@ -35,7 +35,7 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
 
     public static final String VARIANT = "variant";
     public static final String CLASSIFICATION = "classification";
-    public static final String SCORE = "score";
+    public static final String SCORE = "curationScore";
     public static final String HISTORY = "history";
     public static final String EVIDENCES = "evidences";
     public static final String COMMENTS = "comments";
@@ -43,14 +43,6 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
     private final DocumentToVariantConverter variantConverter;
     private final DocumentToEvidenceEntryConverter evidenceEntryConverter;
     private final DocumentToCommentConverter commentConverter;
-
-    /**
-     * Create a converter between {@link KnownVariant} and {@link Document} entities
-     */
-    public DocumentToKnownVariantConverter() {
-        this(null, null, null);
-    }
-
 
     /**
      * Create a converter between {@link KnownVariant} and {@link Document} entities.
@@ -71,7 +63,7 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
         //TODO: should we inherit the variant id in the CuratedVariant????
         Document variantDocument = (Document) object.get(VARIANT);
         String classification = (String) object.get(CLASSIFICATION);
-        Integer score = (Integer) object.get(SCORE);
+        Integer score = Integer.parseInt((String)object.get(SCORE));
         List<Document> historyDocs = object.get(HISTORY, List.class);
         List<Document> evidencesDocs = object.get(EVIDENCES, List.class);
         List<Document> commentsDocs = object.get(COMMENTS, List.class);
@@ -79,18 +71,24 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
         Variant variant = variantConverter.convertToDataModelType(variantDocument);
         // Converts list of evidences
         List<EvidenceEntry> evidences = new LinkedList<EvidenceEntry>();
-        for (Document evidencesDoc: evidencesDocs) {
-            evidences.add(this.evidenceEntryConverter.convertToDataModelType(evidencesDoc));
+        if (evidencesDocs != null) {
+            for (Document evidencesDoc : evidencesDocs) {
+                evidences.add(this.evidenceEntryConverter.convertToDataModelType(evidencesDoc));
+            }
         }
         // Converts curation history
         List<CurationHistoryEntry> curationHistory = new LinkedList<CurationHistoryEntry>();
-        for (Document historyDoc: historyDocs) {
-            //evidences.add(this.evidenceEntryConverter.convertToDataModelType(evidenceEntry));
+        if (historyDocs != null) {
+            for (Document historyDoc : historyDocs) {
+                //evidences.add(this.evidenceEntryConverter.convertToDataModelType(evidenceEntry));
+            }
         }
         // Converts comments
         List<Comment> comments = new LinkedList<Comment>();
-        for (Document commentsDoc: commentsDocs) {
-            comments.add(this.commentConverter.convertToDataModelType(commentsDoc));
+        if (commentsDocs != null) {
+            for (Document commentsDoc : commentsDocs) {
+                comments.add(this.commentConverter.convertToDataModelType(commentsDoc));
+            }
         }
         //TODO: create converters and convert history
         KnownVariant curatedVariant = new KnownVariant(
@@ -102,7 +100,14 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
     public Document convertToStorageType(KnownVariant curatedVariant) {
 
         Variant variant = curatedVariant.getVariant();
-        Document mongoVariant = variantConverter.convertToStorageType(variant);
+        Document mongoVariant;
+        if (variant != null) {
+            mongoVariant = variantConverter.convertToStorageType(variant);
+        }
+        else {
+            // sets an empty document in case there is no variant
+            mongoVariant = new Document();
+        }
 
         // The curated variant inherits the _id from the variant
         Document mongoCuratedVariant = new Document("_id", this.variantConverter.buildStorageId(variant))
@@ -111,7 +116,7 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
                 .append(VARIANT, mongoVariant);
         // Converts list of evidences
         List<Document> evidences = new LinkedList<Document>();
-        if (curatedVariant.getEvidences() != null && curatedVariant.getEvidences().size() > 0) {
+        if (curatedVariant.getEvidences() != null) {
             for (EvidenceEntry evidenceEntry: (List<EvidenceEntry>) curatedVariant.getEvidences()) {
                 evidences.add(this.evidenceEntryConverter.convertToStorageType(evidenceEntry));
             }
@@ -119,7 +124,7 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
         mongoCuratedVariant.append(EVIDENCES, evidences);
         // Converts history
         List<Document> curationHistory = new LinkedList<Document>();
-        if (curatedVariant.getCurationHistory() != null && curatedVariant.getCurationHistory().size() > 0) {
+        if (curatedVariant.getCurationHistory() != null) {
 
             for (CurationHistoryEntry curationHistoryEntry: (List<CurationHistoryEntry>) curatedVariant.getCurationHistory()) {
                 //curationHistory.add(this.curationHistoryEntryConverter.convertToStorageType(curationHistoryEntry));
@@ -129,7 +134,7 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
         mongoCuratedVariant.append(HISTORY, curationHistory);
         // Converts comments
         List<Document> comments = new LinkedList<Document>();
-        if (curatedVariant.getComments() != null && curatedVariant.getComments().size() > 0) {
+        if (curatedVariant.getComments() != null) {
 
             for (Comment comment: (List<Comment>) curatedVariant.getComments()) {
                 comments.add(this.commentConverter.convertToStorageType(comment));

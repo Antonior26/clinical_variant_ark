@@ -42,6 +42,7 @@ public class DocumentToEvidenceEntryConverter implements ComplexTypeConverter<Ev
     public static final String PUBMED_ID = "pubmedId";
     public static final String VERSION = "version";
     public static final String URL = "url";
+    public static final String STUDY = "study";
     public static final String PHENOTYPES = "phenotypes";
     public static final String PHENOTYPE = "phenotype";
     public static final String INHERITANCE_MODE = "inheritanceMode";
@@ -72,6 +73,7 @@ public class DocumentToEvidenceEntryConverter implements ComplexTypeConverter<Ev
         evidenceEntry.setPubmedId((String) object.get(PUBMED_ID));
         evidenceEntry.setVersion((String) object.get(VERSION));
         evidenceEntry.setUrl((String) object.get(URL));
+        evidenceEntry.setStudy((String) object.get(STUDY));
         // Parses phenotypes
         List<Document> phenotypesDocs = (List<Document>) object.get(PHENOTYPES);
         List<EvidencePhenotype> phenotypes = new LinkedList<EvidencePhenotype>();
@@ -125,6 +127,9 @@ public class DocumentToEvidenceEntryConverter implements ComplexTypeConverter<Ev
         }
         if (evidenceEntry.getUrl() != null) {
             mongoEvidenceEntry.append(URL, evidenceEntry.getUrl());
+        }
+        if (evidenceEntry.getStudy() != null) {
+            mongoEvidenceEntry.append(STUDY, evidenceEntry.getStudy());
         }
         // Parses phenotypes
         if (evidenceEntry.getPhenotypes() != null) {
