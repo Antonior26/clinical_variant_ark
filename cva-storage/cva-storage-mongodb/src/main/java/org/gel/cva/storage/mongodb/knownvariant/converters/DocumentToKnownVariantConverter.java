@@ -21,10 +21,9 @@ import org.gel.models.cva.avro.Comment;
 import org.gel.models.cva.avro.CurationHistoryEntry;
 import org.gel.models.cva.avro.EvidenceEntry;
 import org.opencb.biodata.models.variant.Variant;
-import org.gel.cva.dto.KnownVariant;
+import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
 import org.opencb.commons.datastore.core.ComplexTypeConverter;
 import org.opencb.opencga.storage.mongodb.variant.converters.DocumentToVariantConverter;
-import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToEvidenceEntryConverter;
 
 import java.util.*;
 

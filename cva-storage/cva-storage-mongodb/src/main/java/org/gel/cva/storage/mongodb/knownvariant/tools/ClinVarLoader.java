@@ -8,7 +8,7 @@ import org.gel.cva.storage.mongodb.knownvariant.adaptors.KnownVariantMongoDBAdap
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.models.variant.VariantStudy;
-import org.gel.cva.dto.KnownVariant;
+import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
 import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
 import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
 import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;

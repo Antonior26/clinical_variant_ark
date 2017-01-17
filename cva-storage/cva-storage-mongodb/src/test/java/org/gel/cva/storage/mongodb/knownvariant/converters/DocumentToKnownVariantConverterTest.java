@@ -1,17 +1,15 @@
 package org.gel.cva.storage.mongodb.knownvariant.converters;
 
 import org.bson.Document;
-import org.gel.cva.dto.KnownVariant;
+import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
 import org.gel.models.cva.avro.Comment;
 import org.gel.models.cva.avro.CurationClassification;
-import org.gel.models.cva.avro.CurationScore;
 import org.gel.models.cva.avro.EvidenceEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.opencga.storage.mongodb.variant.converters.DocumentToVariantConverter;
 
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 

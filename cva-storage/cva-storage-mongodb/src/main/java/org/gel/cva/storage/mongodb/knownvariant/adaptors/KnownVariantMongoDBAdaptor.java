@@ -21,7 +21,7 @@ import org.bson.Document;
 import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToCommentConverter;
 import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToEvidenceEntryConverter;
 import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToKnownVariantConverter;
-import org.gel.cva.dto.KnownVariant;
+import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
