@@ -11,7 +11,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="ntbcvariantbox-storage-core" />
+    <orderEntry type="module" module-name="cva-storage-core" />
     <orderEntry type="library" name="Maven: org.gel.models:models:1.0.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: org.opencb.biodata:biodata-models:0.9.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: org.opencb.commons:commons-lib:3.4.0-SNAPSHOT" level="project" />
