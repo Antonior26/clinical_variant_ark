@@ -21,12 +21,16 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import org.gel.models.cva.avro.*;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.commons.datastore.core.ObjectMap;
+import org.opencb.opencga.storage.core.config.CellBaseConfiguration;
+import org.opencb.opencga.storage.core.config.DatabaseCredentials;
+import org.opencb.opencga.storage.core.config.StorageConfiguration;
+import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
+import org.opencb.opencga.storage.core.variant.annotation.annotators.CellBaseRestVariantAnnotator;
 
 import java.io.Serializable;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  *
@@ -83,7 +87,7 @@ public class KnownVariant implements Serializable {
      * Constructor from the variant wrapper with default values for the KnownVariant specific values
      * @param variant the Variant wrapper
      */
-    public KnownVariant(Variant variant) {
+    public KnownVariant(Variant variant) throws VariantAnnotatorException {
         //TODO: perform checks on the Variant, for example we don't want to store information from multiple samples
         // so we may want to delete it
         this.variant = variant;
@@ -95,6 +99,7 @@ public class KnownVariant implements Serializable {
                 this.getDefaultEvidences(),
                 this.getDefaultComments()
         );
+        this.annotateVariant();
     }
 
     /**
@@ -108,7 +113,7 @@ public class KnownVariant implements Serializable {
      */
     public KnownVariant(Variant variant, String curationClassification,
                         Integer curationScore, List curationHistory,
-                        List evidences, List comments) {
+                        List evidences, List comments) throws VariantAnnotatorException{
         this(variant);
         this.setCurationClassification(curationClassification);
         this.setCurationScore(curationScore);
@@ -311,6 +316,27 @@ public class KnownVariant implements Serializable {
         List<EvidenceEntry> evidences = this.getEvidences();
         evidences.add(evidenceEntry);
         this.setEvidences(evidences);
+    }
+
+    public void annotateVariant() throws VariantAnnotatorException {
+        Map options = new ObjectMap();
+        options.put("species", "hsapiens");
+        options.put("assembly", "Grch37");
+        StorageConfiguration storageConfiguration = new StorageConfiguration();
+        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration(
+                Arrays.asList("http://10.5.8.201:8080/cellbase-4.5.0-rc"), "v4",
+                new DatabaseCredentials(
+                        Arrays.asList("http://10.5.8.201:8080/cellbase-4.5.0-rc"), "", "",
+                        options));
+        storageConfiguration.setCellbase(cellBaseConfiguration);
+        CellBaseRestVariantAnnotator cellBaseRestVariantAnnotator = new CellBaseRestVariantAnnotator(
+                storageConfiguration, (ObjectMap)options);
+        List<VariantAnnotation> variantAnnotations = cellBaseRestVariantAnnotator.annotate(Arrays.asList(this.getVariant()));
+        VariantAnnotation variantAnnotation = null;
+        if (variantAnnotations != null && variantAnnotations.size() > 0) {
+            variantAnnotation = variantAnnotations.get(0);
+        }
+        this.impl.getVariant().setAnnotation(variantAnnotation);
     }
 }
 

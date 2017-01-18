@@ -23,6 +23,7 @@ import org.gel.models.cva.avro.EvidenceEntry;
 import org.opencb.biodata.models.variant.Variant;
 import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
 import org.opencb.commons.datastore.core.ComplexTypeConverter;
+import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 import org.opencb.opencga.storage.mongodb.variant.converters.DocumentToVariantConverter;
 
 import java.util.*;
@@ -58,7 +59,7 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
 
 
     @Override
-    public KnownVariant convertToDataModelType(Document object) {
+    public KnownVariant convertToDataModelType(Document object)  {
         //TODO: should we inherit the variant id in the CuratedVariant????
         Document variantDocument = (Document) object.get(VARIANT);
         String classification = (String) object.get(CLASSIFICATION);
@@ -90,8 +91,14 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
             }
         }
         //TODO: create converters and convert history
-        KnownVariant curatedVariant = new KnownVariant(
-                variant, classification, score, curationHistory, evidences, comments);
+        KnownVariant curatedVariant = null;
+        try {
+            curatedVariant = new KnownVariant(
+                    variant, classification, score, curationHistory, evidences, comments);
+        }
+        catch (VariantAnnotatorException e) {
+            //TODO: manage error
+        }
         return curatedVariant;
     }
 

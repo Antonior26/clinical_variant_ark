@@ -8,6 +8,7 @@ import org.gel.models.cva.avro.EvidenceEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 import org.opencb.opencga.storage.mongodb.variant.converters.DocumentToVariantConverter;
 
 import java.util.LinkedList;
@@ -55,7 +56,7 @@ public class DocumentToKnownVariantConverterTest {
     }
 
     @Test
-    public void convertToStorageTypeTest() {
+    public void convertToStorageTypeTest() throws VariantAnnotatorException{
         Variant variant = new Variant("1", 12345, "A", "C");
         KnownVariant knownVariant = new KnownVariant(variant);
         knownVariant.setCurationClassification(this.curationClassification.toString());

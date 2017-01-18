@@ -11,6 +11,7 @@ import org.opencb.biodata.models.variant.VariantStudy;
 import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
 import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
 import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
+import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;
 
 import java.io.FileInputStream;
@@ -108,7 +109,10 @@ public class ClinVarLoader {
     }
 
 
-    public static void main(String [] args) throws FileNotFoundException, IllegalOpenCGACredentialsException, UnknownHostException {
+    public static void main(String [] args) throws FileNotFoundException,
+            IllegalOpenCGACredentialsException,
+            UnknownHostException,
+            VariantAnnotatorException{
 
         MongoCredentials mongoCredentials = new MongoCredentials(
                 "localhost",

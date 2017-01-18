@@ -11,6 +11,8 @@
 
     <modules>
         <module>cva-storage</module>
+        <!--<module>cva-storage/cva-storage-core</module>-->
+        <!--<module>cva-storage/cva-storage-mongodb</module>-->
     </modules>
 
     <properties>

@@ -21,6 +21,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.opencb.biodata.models.variant.*;
+import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +39,8 @@ public class KnownVariantTest {
 
     private VariantSource source = new VariantSource("filename.vcf", "fileId", "studyId", "studyName");
     private VariantFactory factory = new VariantVcfFactory();
+
+    public KnownVariantTest(){}
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -79,7 +83,7 @@ public class KnownVariantTest {
     }
 
     @Test
-    public void testCreateCuratedVariantFromVariantAndDefaultValues() {
+    public void testCreateCuratedVariantFromVariantAndDefaultValues() throws VariantAnnotatorException{
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 
@@ -109,7 +113,7 @@ public class KnownVariantTest {
     }
 
     @Test
-    public void testCreateCuratedVariantFromVariant() {
+    public void testCreateCuratedVariantFromVariant() throws VariantAnnotatorException {
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 
@@ -161,7 +165,7 @@ public class KnownVariantTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateCuratedVariantIllegalClassification() {
+    public void testCreateCuratedVariantIllegalClassification() throws VariantAnnotatorException {
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 
@@ -175,7 +179,7 @@ public class KnownVariantTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateCuratedVariantIllegalScore() {
+    public void testCreateCuratedVariantIllegalScore() throws VariantAnnotatorException {
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 
@@ -189,7 +193,7 @@ public class KnownVariantTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateCuratedVariantIllegalScore2() {
+    public void testCreateCuratedVariantIllegalScore2() throws VariantAnnotatorException {
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 
@@ -200,5 +204,21 @@ public class KnownVariantTest {
         KnownVariant knownVariant = new KnownVariant(variant,
                 "VUS", -1,
                 null, null, null);
+    }
+
+    @Test
+    public void testAnnotation() throws VariantAnnotatorException{
+        // Test when there are differences at the end of the sequence
+        String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
+
+        List<Variant> result = factory.create(source, line);
+        result.stream().forEach(variant -> variant.setStudies(Collections.<StudyEntry>emptyList()));
+
+        Variant variant = result.get(0);
+        KnownVariant knownVariant = new KnownVariant(variant,
+                "disease_associated_variant", 5,
+                null, null, null);
+        knownVariant.annotateVariant();
+        assertNotNull(knownVariant.getImpl().getVariant().getAnnotation());
     }
 }

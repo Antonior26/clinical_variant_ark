@@ -8,6 +8,7 @@ import org.opencb.biodata.models.variant.VariantFactory;
 import org.opencb.biodata.models.variant.VariantVcfFactory;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.StudyEntry;
+import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;
 
 import java.util.Collections;
@@ -47,7 +48,7 @@ public class KnownVariantMongoDBAdapterTest {
     }
 
     @Test
-    public void testSimpleInsert() {
+    public void testSimpleInsert() throws VariantAnnotatorException {
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 
