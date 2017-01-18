@@ -19,6 +19,7 @@ package org.gel.cva.storage.mongodb.knownvariant.converters;
 import org.bson.Document;
 import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
 import org.gel.models.cva.avro.*;
+import org.gel.models.report.avro.*;
 import org.opencb.commons.datastore.core.ComplexTypeConverter;
 
 import java.util.LinkedList;
@@ -32,20 +33,19 @@ public class DocumentToEvidenceEntryConverter implements ComplexTypeConverter<Ev
 
     public static final String DATE = "date";
     public static final String SUBMITTER = "submitter";
-    public static final String EVIDENCE_SOURCE = "evidenceSource";
+    public static final String SOURCE_NAME = "sourceName";
+    public static final String SOURCE_CLASS = "sourceClass";
+    public static final String SOURCE_VERSION = "sourceVersion";
+    public static final String SOURCE_URL = "sourceUrl";
     public static final String ALLELE_ORIGIN = "alleleOrigin";
-    public static final String DATABASE_NAME = "databaseName";
-    public static final String DESCRIPTION = "description";
-    public static final String ETHNICITY = "ethnicity";
-    public static final String GEOGRAPHICAL_ORIGIN = "geographicalOrigin";
-    public static final String NUMBER_INDIVIDUALS = "numberIndividuals";
-    public static final String PUBMED_ID = "pubmedId";
-    public static final String VERSION = "version";
-    public static final String URL = "url";
-    public static final String STUDY = "study";
     public static final String PHENOTYPES = "phenotypes";
     public static final String PHENOTYPE = "phenotype";
     public static final String INHERITANCE_MODE = "inheritanceMode";
+    public static final String PUBMED_ID = "pubmedId";
+    public static final String STUDY = "study";
+    public static final String NUMBER_INDIVIDUALS = "numberIndividuals";
+    public static final String ETHNICITY = "ethnicity";
+    public static final String DESCRIPTION = "description";
     public static final String COMMENTS = "comments";
 
     private static DocumentToCommentConverter commentConverter;
@@ -63,27 +63,26 @@ public class DocumentToEvidenceEntryConverter implements ComplexTypeConverter<Ev
         EvidenceEntry evidenceEntry = new EvidenceEntry();
         evidenceEntry.setDate((Long) object.get(DATE));
         evidenceEntry.setSubmitter((String) object.get(SUBMITTER));
-        evidenceEntry.setSource(EvidenceSource.valueOf((String) object.get(EVIDENCE_SOURCE)));
+        evidenceEntry.setSourceName((String) object.get(SOURCE_NAME));
+        evidenceEntry.setSourceClass(SourceClass.valueOf((String) object.get(SOURCE_CLASS)));
+        evidenceEntry.setSourceVersion((String) object.get(SOURCE_VERSION));
+        evidenceEntry.setSourceUrl((String) object.get(SOURCE_URL));
         evidenceEntry.setAlleleOrigin(AlleleOrigin.valueOf((String) object.get(ALLELE_ORIGIN)));
-        evidenceEntry.setDatabaseName((String) object.get(DATABASE_NAME));
-        evidenceEntry.setDescription((String) object.get(DESCRIPTION));
-        evidenceEntry.setEthnicity((String) object.get(ETHNICITY));
-        evidenceEntry.setGeographicalOrigin((String) object.get(GEOGRAPHICAL_ORIGIN));
-        evidenceEntry.setNumberIndividuals((Integer) object.get(NUMBER_INDIVIDUALS));
-        evidenceEntry.setPubmedId((String) object.get(PUBMED_ID));
-        evidenceEntry.setVersion((String) object.get(VERSION));
-        evidenceEntry.setUrl((String) object.get(URL));
-        evidenceEntry.setStudy((String) object.get(STUDY));
         // Parses phenotypes
         List<Document> phenotypesDocs = (List<Document>) object.get(PHENOTYPES);
         List<EvidencePhenotype> phenotypes = new LinkedList<EvidencePhenotype>();
         for (Document phenotypeDoc: phenotypesDocs) {
             EvidencePhenotype evidencePhenotype = new EvidencePhenotype();
             evidencePhenotype.setPhenotype((String)phenotypeDoc.get(PHENOTYPE));
-            evidencePhenotype.setInheritanceMode(InheritanceMode.valueOf((String)phenotypeDoc.get(INHERITANCE_MODE)));
+            evidencePhenotype.setInheritanceMode(ReportedModeOfInheritance.valueOf((String)phenotypeDoc.get(INHERITANCE_MODE)));
             phenotypes.add(evidencePhenotype);
         }
         evidenceEntry.setPhenotypes(phenotypes);
+        evidenceEntry.setPubmedId((String) object.get(PUBMED_ID));
+        evidenceEntry.setStudy((String) object.get(STUDY));
+        evidenceEntry.setNumberIndividuals((Integer) object.get(NUMBER_INDIVIDUALS));
+        evidenceEntry.setEthnicity(EthnicCategory.valueOf((String) object.get(ETHNICITY)));
+        evidenceEntry.setDescription((String) object.get(DESCRIPTION));
         // Parses comments
         List<Document> commentsDocs = (List<Document>) object.get(COMMENTS);
         List<Comment> comments = new LinkedList<Comment>();
@@ -98,39 +97,20 @@ public class DocumentToEvidenceEntryConverter implements ComplexTypeConverter<Ev
     @Override
     public Document convertToStorageType(EvidenceEntry evidenceEntry) {
         // Creates an EvidenceEntry with the compulsory fields
-        Document mongoEvidenceEntry = new Document()
-                .append(DATE, evidenceEntry.getDate())
-                .append(SUBMITTER, evidenceEntry.getSubmitter())
-                .append(EVIDENCE_SOURCE, evidenceEntry.getSource().toString())
-                .append(ALLELE_ORIGIN, evidenceEntry.getAlleleOrigin().toString());
-        // Adds optional fields if present
-        if (evidenceEntry.getDatabaseName() != null) {
-            mongoEvidenceEntry.append(DATABASE_NAME, evidenceEntry.getDatabaseName());
+        Document mongoEvidenceEntry = new Document();
+        mongoEvidenceEntry.append(DATE, evidenceEntry.getDate());
+        mongoEvidenceEntry.append(SUBMITTER, evidenceEntry.getSubmitter());
+        if (evidenceEntry.getSourceName() != null) {
+            mongoEvidenceEntry.append(SOURCE_NAME, evidenceEntry.getSourceName());
         }
-        if (evidenceEntry.getDescription() != null) {
-            mongoEvidenceEntry.append(DESCRIPTION, evidenceEntry.getDescription());
+        mongoEvidenceEntry.append(SOURCE_CLASS, evidenceEntry.getSourceClass().toString());
+        if (evidenceEntry.getSourceVersion() != null) {
+            mongoEvidenceEntry.append(SOURCE_VERSION, evidenceEntry.getSourceVersion());
         }
-        if (evidenceEntry.getEthnicity() != null) {
-            mongoEvidenceEntry.append(ETHNICITY, evidenceEntry.getEthnicity());
+        if (evidenceEntry.getSourceUrl() != null) {
+            mongoEvidenceEntry.append(SOURCE_URL, evidenceEntry.getSourceUrl());
         }
-        if (evidenceEntry.getGeographicalOrigin() != null) {
-            mongoEvidenceEntry.append(GEOGRAPHICAL_ORIGIN, evidenceEntry.getGeographicalOrigin());
-        }
-        if (evidenceEntry.getNumberIndividuals() != null) {
-            mongoEvidenceEntry.append(NUMBER_INDIVIDUALS, evidenceEntry.getNumberIndividuals());
-        }
-        if (evidenceEntry.getPubmedId() != null) {
-            mongoEvidenceEntry.append(PUBMED_ID, evidenceEntry.getPubmedId());
-        }
-        if (evidenceEntry.getVersion() != null) {
-            mongoEvidenceEntry.append(VERSION, evidenceEntry.getVersion());
-        }
-        if (evidenceEntry.getUrl() != null) {
-            mongoEvidenceEntry.append(URL, evidenceEntry.getUrl());
-        }
-        if (evidenceEntry.getStudy() != null) {
-            mongoEvidenceEntry.append(STUDY, evidenceEntry.getStudy());
-        }
+        mongoEvidenceEntry.append(ALLELE_ORIGIN, evidenceEntry.getAlleleOrigin().toString());
         // Parses phenotypes
         if (evidenceEntry.getPhenotypes() != null) {
             List<EvidencePhenotype> phenotypes = evidenceEntry.getPhenotypes();
@@ -142,6 +122,21 @@ public class DocumentToEvidenceEntryConverter implements ComplexTypeConverter<Ev
                 );
             }
             mongoEvidenceEntry.append(PHENOTYPES, phenotypesDocs);
+        }
+        if (evidenceEntry.getPubmedId() != null) {
+            mongoEvidenceEntry.append(PUBMED_ID, evidenceEntry.getPubmedId());
+        }
+        if (evidenceEntry.getStudy() != null) {
+            mongoEvidenceEntry.append(STUDY, evidenceEntry.getStudy());
+        }
+        if (evidenceEntry.getEthnicity() != null) {
+            mongoEvidenceEntry.append(ETHNICITY, evidenceEntry.getEthnicity().toString());
+        }
+        if (evidenceEntry.getNumberIndividuals() != null) {
+            mongoEvidenceEntry.append(NUMBER_INDIVIDUALS, evidenceEntry.getNumberIndividuals());
+        }
+        if (evidenceEntry.getDescription() != null) {
+            mongoEvidenceEntry.append(DESCRIPTION, evidenceEntry.getDescription());
         }
         // Parses comments
         if (evidenceEntry.getComments() != null) {

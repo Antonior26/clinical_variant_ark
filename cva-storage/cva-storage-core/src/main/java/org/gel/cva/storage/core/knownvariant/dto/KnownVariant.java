@@ -156,7 +156,7 @@ public class KnownVariant implements Serializable {
         Date now = new Date();
         evidenceEntry.setDate(now.getTime());
         evidenceEntry.setAlleleOrigin(AlleleOrigin.unknown);
-        evidenceEntry.setSource(EvidenceSource.unknown);
+        evidenceEntry.setSourceClass(SourceClass.unknown);
         evidenceEntry.setSubmitter("None");
         List evidences = new LinkedList<EvidenceEntry>();
         evidences.add(evidenceEntry);
@@ -307,8 +307,8 @@ public class KnownVariant implements Serializable {
         if (evidenceEntry.getSubmitter() == null || evidenceEntry.getSubmitter().equals("")){
             throw new IllegalArgumentException("Submitter is required to register an evidence");
         }
-        if (evidenceEntry.getSource() == null) {
-            evidenceEntry.setSource(EvidenceSource.unknown);
+        if (evidenceEntry.getSourceClass() == null) {
+            evidenceEntry.setSourceClass(SourceClass.unknown);
         }
         if (evidenceEntry.getAlleleOrigin() == null) {
             evidenceEntry.setAlleleOrigin(AlleleOrigin.unknown);
@@ -332,7 +332,13 @@ public class KnownVariant implements Serializable {
         storageConfiguration.setCellbase(cellBaseConfiguration);
         CellBaseRestVariantAnnotator cellBaseRestVariantAnnotator = new CellBaseRestVariantAnnotator(
                 storageConfiguration, (ObjectMap)options);
-        List<VariantAnnotation> variantAnnotations = cellBaseRestVariantAnnotator.annotate(Arrays.asList(this.getVariant()));
+        List<VariantAnnotation> variantAnnotations = null;
+        try {
+            variantAnnotations = cellBaseRestVariantAnnotator.annotate(Arrays.asList(this.getVariant()));
+        }
+        catch (Exception e) {
+            //TODO: manage these errors
+        }
         VariantAnnotation variantAnnotation = null;
         if (variantAnnotations != null && variantAnnotations.size() > 0) {
             variantAnnotation = variantAnnotations.get(0);

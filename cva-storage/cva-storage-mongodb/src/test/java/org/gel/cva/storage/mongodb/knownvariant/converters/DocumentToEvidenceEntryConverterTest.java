@@ -2,6 +2,8 @@ package org.gel.cva.storage.mongodb.knownvariant.converters;
 
 import org.bson.Document;
 import org.gel.models.cva.avro.*;
+import org.gel.models.report.avro.EthnicCategory;
+import org.gel.models.report.avro.ReportedModeOfInheritance;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -16,29 +18,28 @@ import static org.junit.Assert.assertEquals;
  */
 public class DocumentToEvidenceEntryConverterTest {
 
-    private DocumentToEvidenceEntryConverter evidenceEntryConverter;
-    private Date now = new Date();
-    private Long date = now.getTime();
-    private String submitter = "Mr.Test";
-    private EvidenceSource evidenceSource = EvidenceSource.unknown;
-    private AlleleOrigin alleleOrigin = AlleleOrigin.unknown;
+    DocumentToEvidenceEntryConverter evidenceEntryConverter;
+    Date now = new Date();
+    Long date = now.getTime();
+    String submitter = "Mr.Test";
+    String sourceName = "RiskDB";
+    SourceClass sourceClass = SourceClass.unknown;
+    String sourceVersion = "latest";
+    String sourceUrl = "http://yourref.com";
+    AlleleOrigin alleleOrigin = AlleleOrigin.unknown;
     List<EvidencePhenotype> phenotypes = new LinkedList<EvidencePhenotype>();
-    String version = "latest";
     String pubmedId = "12345";
-    String url = "http://yourref.com";
     String study = "any_study";
-    String databaseName = "RiskDB";
     Integer numberIndividuals = 4;
-    String ethnicity = "headhunter";
-    String geographicalOrigin = "inagalaxyfarfaraway";
+    EthnicCategory ethnicity = EthnicCategory.A;
     String description = "this reference is an important evidence";
     List<Comment> comments = new LinkedList<Comment>();
 
     @Before
     public void setup() {
         this.evidenceEntryConverter = new DocumentToEvidenceEntryConverter(new DocumentToCommentConverter());
-        EvidencePhenotype evidencePhenotype = new EvidencePhenotype("SO:000001", InheritanceMode.autosomal_dominant);
-        EvidencePhenotype evidencePhenotype2 = new EvidencePhenotype("SO:000001", InheritanceMode.autosomal_dominant);
+        EvidencePhenotype evidencePhenotype = new EvidencePhenotype("SO:000001", ReportedModeOfInheritance.biallelic);
+        EvidencePhenotype evidencePhenotype2 = new EvidencePhenotype("SO:000002", ReportedModeOfInheritance.mitochondrial);
         this.phenotypes.add(evidencePhenotype);
         this.phenotypes.add(evidencePhenotype2);
         Comment comment = new Comment();
@@ -56,27 +57,27 @@ public class DocumentToEvidenceEntryConverterTest {
     @Test
     public void convertToDataModelTypeTest() {
         Document document = new Document();
-        document.append("date", this.date);
-        document.append("submitter", this.submitter);
-        document.append("evidenceSource", this.evidenceSource.toString());
-        document.append("alleleOrigin", this.alleleOrigin.toString());
+        document.append(DocumentToEvidenceEntryConverter.DATE, this.date);
+        document.append(DocumentToEvidenceEntryConverter.SUBMITTER, this.submitter);
+        document.append(DocumentToEvidenceEntryConverter.SOURCE_NAME, this.sourceName);
+        document.append(DocumentToEvidenceEntryConverter.SOURCE_CLASS, this.sourceClass.toString());
+        document.append(DocumentToEvidenceEntryConverter.SOURCE_VERSION, this.sourceVersion);
+        document.append(DocumentToEvidenceEntryConverter.SOURCE_URL, this.sourceUrl);
+        document.append(DocumentToEvidenceEntryConverter.ALLELE_ORIGIN, this.alleleOrigin.toString());
         List<Document> phenotypesDocuments = new LinkedList<Document>();
         for (EvidencePhenotype phenotype : this.phenotypes) {
             Document phenotypeDocument = new Document();
-            phenotypeDocument.append("phenotype", phenotype.getPhenotype());
-            phenotypeDocument.append("inheritanceMode", phenotype.getInheritanceMode().toString());
+            phenotypeDocument.append(DocumentToEvidenceEntryConverter.PHENOTYPE, phenotype.getPhenotype());
+            phenotypeDocument.append(DocumentToEvidenceEntryConverter.INHERITANCE_MODE,
+                    phenotype.getInheritanceMode().toString());
             phenotypesDocuments.add(phenotypeDocument);
         }
-        document.append("phenotypes", phenotypesDocuments);
-        document.append("version", this.version);
-        document.append("pubmedId", this.pubmedId);
-        document.append("url", this.url);
-        document.append("study", this.study);
-        document.append("databaseName", this.databaseName);
-        document.append("numberIndividuals", this.numberIndividuals);
-        document.append("ethnicity", this.ethnicity);
-        document.append("geographicalOrigin", this.geographicalOrigin);
-        document.append("description", this.description);
+        document.append(DocumentToEvidenceEntryConverter.PHENOTYPES, phenotypesDocuments);
+        document.append(DocumentToEvidenceEntryConverter.PUBMED_ID, this.pubmedId);
+        document.append(DocumentToEvidenceEntryConverter.STUDY, this.study);
+        document.append(DocumentToEvidenceEntryConverter.NUMBER_INDIVIDUALS, this.numberIndividuals);
+        document.append(DocumentToEvidenceEntryConverter.ETHNICITY, this.ethnicity.toString());
+        document.append(DocumentToEvidenceEntryConverter.DESCRIPTION, this.description);
         List<Document> commentsDocuments = new LinkedList<Document>();
         for (Comment comment: this.comments) {
             Document commentDocument = new Document();
@@ -85,21 +86,20 @@ public class DocumentToEvidenceEntryConverterTest {
             commentDocument.append("date", comment.getDate());
             commentsDocuments.add(commentDocument);
         }
-        document.append("comments", commentsDocuments);
+        document.append(DocumentToEvidenceEntryConverter.COMMENTS, commentsDocuments);
         EvidenceEntry evidenceEntry = evidenceEntryConverter.convertToDataModelType(document);
         assertEquals(evidenceEntry.getDate(), this.date);
         assertEquals(evidenceEntry.getSubmitter(), this.submitter);
-        assertEquals(evidenceEntry.getSource(), this.evidenceSource);
+        assertEquals(evidenceEntry.getSourceName(), this.sourceName);
+        assertEquals(evidenceEntry.getSourceClass(), this.sourceClass);
+        assertEquals(evidenceEntry.getSourceVersion(), this.sourceVersion);
+        assertEquals(evidenceEntry.getSourceUrl(), this.sourceUrl);
         assertEquals(evidenceEntry.getAlleleOrigin(), this.alleleOrigin);
         assertEquals(evidenceEntry.getPhenotypes().size(), this.phenotypes.size());
-        assertEquals(evidenceEntry.getVersion(), this.version);
         assertEquals(evidenceEntry.getPubmedId(), this.pubmedId);
-        assertEquals(evidenceEntry.getUrl(), this.url);
         assertEquals(evidenceEntry.getStudy(), this.study);
-        assertEquals(evidenceEntry.getDatabaseName(), this.databaseName);
         assertEquals(evidenceEntry.getNumberIndividuals(), this.numberIndividuals);
         assertEquals(evidenceEntry.getEthnicity(), this.ethnicity);
-        assertEquals(evidenceEntry.getGeographicalOrigin(), this.geographicalOrigin);
         assertEquals(evidenceEntry.getDescription(), this.description);
         assertEquals(evidenceEntry.getComments().size(), this.comments.size());
     }
@@ -109,24 +109,32 @@ public class DocumentToEvidenceEntryConverterTest {
         EvidenceEntry evidenceEntry = new EvidenceEntry();
         evidenceEntry.setDate(this.date);
         evidenceEntry.setSubmitter(this.submitter);
-        evidenceEntry.setSource(this.evidenceSource);
+        evidenceEntry.setSourceName(this.sourceName);
+        evidenceEntry.setSourceClass(this.sourceClass);
+        evidenceEntry.setSourceVersion(this.sourceVersion);
+        evidenceEntry.setSourceUrl(this.sourceUrl);
         evidenceEntry.setAlleleOrigin(this.alleleOrigin);
         evidenceEntry.setPhenotypes(this.phenotypes);
-        evidenceEntry.setVersion(this.version);
         evidenceEntry.setPubmedId(this.pubmedId);
-        evidenceEntry.setUrl(this.url);
         evidenceEntry.setStudy(this.study);
-        evidenceEntry.setDatabaseName(this.databaseName);
         evidenceEntry.setNumberIndividuals(this.numberIndividuals);
         evidenceEntry.setEthnicity(this.ethnicity);
-        evidenceEntry.setGeographicalOrigin(this.geographicalOrigin);
         evidenceEntry.setDescription(this.description);
         evidenceEntry.setComments(this.comments);
         Document document = evidenceEntryConverter.convertToStorageType(evidenceEntry);
-        assertEquals(document.get("date"), this.date);
-        assertEquals(document.get("submitter"), this.submitter);
-        assertEquals(document.get("evidenceSource"), this.evidenceSource.toString());
-        assertEquals(document.get("alleleOrigin"), this.alleleOrigin.toString());
-        assertEquals(((List)document.get("phenotypes")).size(), this.phenotypes.size());
+        assertEquals(document.get(DocumentToEvidenceEntryConverter.DATE), this.date);
+        assertEquals(document.get(DocumentToEvidenceEntryConverter.SUBMITTER), this.submitter);
+        assertEquals(document.get(DocumentToEvidenceEntryConverter.SOURCE_NAME), this.sourceName);
+        assertEquals(document.get(DocumentToEvidenceEntryConverter.SOURCE_CLASS), this.sourceClass.toString());
+        assertEquals(document.get(DocumentToEvidenceEntryConverter.SOURCE_VERSION), this.sourceVersion);
+        assertEquals(document.get(DocumentToEvidenceEntryConverter.SOURCE_URL), this.sourceUrl);
+        assertEquals(document.get(DocumentToEvidenceEntryConverter.ALLELE_ORIGIN), this.alleleOrigin.toString());
+        assertEquals(((List)document.get(DocumentToEvidenceEntryConverter.PHENOTYPES)).size(), this.phenotypes.size());
+        assertEquals(document.get(DocumentToEvidenceEntryConverter.PUBMED_ID), this.pubmedId);
+        assertEquals(document.get(DocumentToEvidenceEntryConverter.STUDY), this.study);
+        assertEquals(document.get(DocumentToEvidenceEntryConverter.NUMBER_INDIVIDUALS), this.numberIndividuals);
+        assertEquals(document.get(DocumentToEvidenceEntryConverter.ETHNICITY), this.ethnicity.toString());
+        assertEquals(document.get(DocumentToEvidenceEntryConverter.DESCRIPTION), this.description);
+        assertEquals(((List)document.get(DocumentToEvidenceEntryConverter.COMMENTS)).size(), this.comments.size());
     }
 }

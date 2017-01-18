@@ -1,22 +1,18 @@
 package org.gel.cva.storage.mongodb.knownvariant.tools;
 
 import com.mongodb.MongoWriteException;
-import org.gel.cva.storage.core.config.CvaConfiguration;
-import org.gel.cva.storage.core.config.StorageEngineConfiguration;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.models.cva.avro.AlleleOrigin;
 import org.gel.models.cva.avro.EvidenceEntry;
-import org.gel.models.cva.avro.EvidenceSource;
 import org.gel.cva.storage.mongodb.knownvariant.adaptors.KnownVariantMongoDBAdaptor;
+import org.gel.models.cva.avro.SourceClass;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.models.variant.VariantStudy;
 import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
 import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
 import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
-import org.opencb.opencga.storage.core.config.DatabaseCredentials;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
-import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -26,8 +22,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by priesgo on 08/01/17.
@@ -149,14 +143,14 @@ public class ClinVarLoader {
                 String dbsnpId = (String) annotations.get("RS");
                 // Creates a ClinVar adhoc evidence
                 EvidenceEntry evidenceEntry = new EvidenceEntry();
-                evidenceEntry.setSource(EvidenceSource.database);
+                evidenceEntry.setSourceClass(SourceClass.database);
                 evidenceEntry.setAlleleOrigin(getAlleleOriginFromSAO(sao));
-                evidenceEntry.setDatabaseName("ClinVar");
-                evidenceEntry.setVersion("20170104");
+                evidenceEntry.setSourceName("ClinVar");
+                evidenceEntry.setSourceVersion("20170104");
                 evidenceEntry.setSubmitter("ClinVar loader");
                 String clinVarUrl = String.format(
                         "https://www.ncbi.nlm.nih.gov/clinvar?term=%1$s[External allele ID]", dbsnpId);
-                evidenceEntry.setUrl(clinVarUrl);
+                evidenceEntry.setSourceUrl(clinVarUrl);
                 List<EvidenceEntry> evidences = new ArrayList<EvidenceEntry>();
                 evidences.add(evidenceEntry);
                 // Creates a curated variant
