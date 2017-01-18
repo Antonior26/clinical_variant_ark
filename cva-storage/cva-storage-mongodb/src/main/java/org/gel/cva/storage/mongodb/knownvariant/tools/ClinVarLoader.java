@@ -1,6 +1,9 @@
 package org.gel.cva.storage.mongodb.knownvariant.tools;
 
 import com.mongodb.MongoWriteException;
+import org.gel.cva.storage.core.config.CvaConfiguration;
+import org.gel.cva.storage.core.config.StorageEngineConfiguration;
+import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.models.cva.avro.AlleleOrigin;
 import org.gel.models.cva.avro.EvidenceEntry;
 import org.gel.models.cva.avro.EvidenceSource;
@@ -11,16 +14,20 @@ import org.opencb.biodata.models.variant.VariantStudy;
 import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
 import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
 import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
+import org.opencb.opencga.storage.core.config.DatabaseCredentials;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by priesgo on 08/01/17.
@@ -112,21 +119,15 @@ public class ClinVarLoader {
     public static void main(String [] args) throws FileNotFoundException,
             IllegalOpenCGACredentialsException,
             UnknownHostException,
-            VariantAnnotatorException{
+            VariantAnnotatorException,
+            IOException,
+            IllegalCvaConfigurationException
+    {
 
-        MongoCredentials mongoCredentials = new MongoCredentials(
-                "localhost",
-                27017,
-                "clinvar",
-                "",
-                "",
-                false
-        );
+        // Creates db adaptor
+        KnownVariantMongoDBAdaptor knownVariantMongoDBAdaptor = KnownVariantMongoDBAdaptor.getInstance();
 
-        KnownVariantMongoDBAdaptor curatedVariantMongoDBAdaptor = new KnownVariantMongoDBAdaptor(
-                mongoCredentials,
-                "curated_variants");
-
+        // Reads ClinVar input VCF
         InputStream inputStream = new FileInputStream("/home/priesgo/data/clinvar/clinvar_20170104.vcf");
         VariantSource source = new VariantSource("/home/priesgo/data/clinvar/clinvar_20170104.vcf", "2", "1", "myStudy", VariantStudy.StudyType.FAMILY, VariantSource.Aggregation.NONE);
         VariantVcfHtsjdkReader reader = new VariantVcfHtsjdkReader(inputStream, source);
@@ -146,7 +147,6 @@ public class ClinVarLoader {
                 String clinicalRevisionStatus = (String) annotations.get("CLNREVSTAT");
                 String sao = (String) annotations.get("SAO");
                 String dbsnpId = (String) annotations.get("RS");
-
                 // Creates a ClinVar adhoc evidence
                 EvidenceEntry evidenceEntry = new EvidenceEntry();
                 evidenceEntry.setSource(EvidenceSource.database);
@@ -160,7 +160,7 @@ public class ClinVarLoader {
                 List<EvidenceEntry> evidences = new ArrayList<EvidenceEntry>();
                 evidences.add(evidenceEntry);
                 // Creates a curated variant
-                KnownVariant curatedVariant = new KnownVariant(
+                KnownVariant knownVariant = new KnownVariant(
                         variant,
                         getCurationClassificationFromClinicalsignificance(clinicalSignificance),
                         getCurationScoreFromRevisionStatus(clinicalRevisionStatus),
@@ -170,7 +170,7 @@ public class ClinVarLoader {
                         );
                 // Inserts in Mongo
                 try {
-                    curatedVariantMongoDBAdaptor.insert(curatedVariant, null);
+                    knownVariantMongoDBAdaptor.insert(knownVariant, null);
                 }
                 catch (MongoWriteException e) {
                     duplicatedVariants ++;

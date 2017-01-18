@@ -27,14 +27,6 @@ public class KnownVariantMongoDBAdapterTest {
 
     @Before
     public void setUp() throws Exception {
-        this.mongoCredentials = new MongoCredentials(
-                "localhost",
-                27017,
-                "mydb",
-                "",
-                "",
-                false
-        );
         //NOTE: authenticated loin does not work, don't know why...
         this.factory = new VariantVcfFactory();
         this.source = new VariantSource(
@@ -42,9 +34,7 @@ public class KnownVariantMongoDBAdapterTest {
                 "fileId",
                 "studyId",
                 "studyName");
-        this.curatedVariantMongoDBAdaptor = new KnownVariantMongoDBAdaptor(
-                this.mongoCredentials,
-                "curated_variants");
+        this.curatedVariantMongoDBAdaptor = KnownVariantMongoDBAdaptor.getInstance();
     }
 
     @Test

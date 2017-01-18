@@ -89,6 +89,7 @@ public class KnownVariant implements Serializable {
      */
     public KnownVariant(Variant variant) throws VariantAnnotatorException {
         //TODO: perform checks on the Variant, for example we don't want to store information from multiple samples
+        //TODO: make annotation optional
         // so we may want to delete it
         this.variant = variant;
         this.impl = new KnownVariantAvro(
