@@ -17,8 +17,6 @@
 package org.gel.cva.storage.core.knownvariant.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
 import org.gel.models.cva.avro.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
@@ -43,19 +41,8 @@ public class KnownVariant implements Serializable {
 
     private KnownVariantAvro impl;
     private Variant variant;
-    static private Integer INF_CURATION_SCORE = 0;
-    static private Integer SUP_CURATION_SCORE = 5;
     static private Integer DEFAULT_CURATION_SCORE = 0;
     static private String DEFAULT_CURATION_CLASSIFICATION = "VUS";
-    static public BiMap<Integer, CurationScore> curation_score_mapping = HashBiMap.create();
-    static {
-        curation_score_mapping.put(0, CurationScore.NOT_CURATED);
-        curation_score_mapping.put(1, CurationScore.CURATION_CONFIDENCE_1);
-        curation_score_mapping.put(2, CurationScore.CURATION_CONFIDENCE_2);
-        curation_score_mapping.put(3, CurationScore.CURATION_CONFIDENCE_3);
-        curation_score_mapping.put(4, CurationScore.CURATION_CONFIDENCE_4);
-        curation_score_mapping.put(5, CurationScore.CURATION_CONFIDENCE_5);
-    };
 
     /**
      * Empty constructor, set default values
@@ -136,7 +123,7 @@ public class KnownVariant implements Serializable {
      * @return
      */
     private CurationScore getDefaultCurationScore() {
-        return curation_score_mapping.get(KnownVariant.DEFAULT_CURATION_SCORE);
+        return CurationScoreHelper.getCurationScoreEnum(KnownVariant.DEFAULT_CURATION_SCORE);
     }
 
     /**
@@ -200,14 +187,8 @@ public class KnownVariant implements Serializable {
         if (curationScore == null) {
             impl.setCurationScore(this.getDefaultCurationScore());
         }
-        else if (curationScore < KnownVariant.INF_CURATION_SCORE ||
-                curationScore > KnownVariant.SUP_CURATION_SCORE) {
-            throw new IllegalArgumentException(String.format(
-                    "The curation score must be in the interval [%1$d, %2$d], found %3$d",
-                    KnownVariant.INF_CURATION_SCORE, KnownVariant.SUP_CURATION_SCORE, curationScore));
-        }
         else {
-            impl.setCurationScore(curation_score_mapping.get(curationScore));
+            impl.setCurationScore(CurationScoreHelper.getCurationScoreEnum(curationScore));
         }
     }
 
@@ -216,7 +197,7 @@ public class KnownVariant implements Serializable {
      * @return
      */
     public Integer getCurationScore() {
-        return curation_score_mapping.inverse().get(impl.getCurationScore());
+        return CurationScoreHelper.getCurationScoreInt(impl.getCurationScore());
     }
 
     /**

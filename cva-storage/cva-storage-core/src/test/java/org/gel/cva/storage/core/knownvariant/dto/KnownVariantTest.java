@@ -16,6 +16,8 @@
 package org.gel.cva.storage.core.knownvariant.dto;
 
 import org.gel.models.cva.avro.*;
+import org.gel.models.report.avro.EthnicCategory;
+import org.gel.models.report.avro.ReportedModeOfInheritance;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -56,7 +58,7 @@ public class KnownVariantTest {
         assertEquals(1, knownVariant.getEvidences().size());
         EvidenceEntry defaultEvidenceEntry = (EvidenceEntry)knownVariant.getEvidences().get(0);
         assertEquals(AlleleOrigin.unknown, defaultEvidenceEntry.getAlleleOrigin());
-        assertEquals(EvidenceSource.unknown, defaultEvidenceEntry.getSource());
+        assertEquals(SourceClass.unknown, defaultEvidenceEntry.getSourceClass());
         assertEquals("None", defaultEvidenceEntry.getSubmitter());
     }
 
@@ -75,7 +77,7 @@ public class KnownVariantTest {
         assertNotNull(curatedVariantAvro);
         assertEquals(CurationClassification.VUS, curatedVariantAvro.getClassification());
         assertEquals(new Integer(0),
-                KnownVariant.curation_score_mapping.inverse().get(curatedVariantAvro.getCurationScore()));
+                CurationScoreHelper.getCurationScoreInt(curatedVariantAvro.getCurationScore()));
         assertNotNull(curatedVariantAvro.getHistory());
         assertNotNull(curatedVariantAvro.getEvidences());
         assertNotNull(curatedVariantAvro.getComments());
@@ -105,7 +107,7 @@ public class KnownVariantTest {
         assertNotNull(curatedVariantAvro);
         assertEquals(CurationClassification.VUS, curatedVariantAvro.getClassification());
         assertEquals(new Integer(0),
-                KnownVariant.curation_score_mapping.inverse().get(curatedVariantAvro.getCurationScore()));
+                CurationScoreHelper.getCurationScoreInt(curatedVariantAvro.getCurationScore()));
         assertNotNull(curatedVariantAvro.getHistory());
         assertNotNull(curatedVariantAvro.getEvidences());
         assertNotNull(curatedVariantAvro.getComments());
@@ -137,7 +139,7 @@ public class KnownVariantTest {
         assertNotNull(curatedVariantAvro);
         assertEquals(CurationClassification.disease_associated_variant, curatedVariantAvro.getClassification());
         assertEquals(new Integer(5),
-                KnownVariant.curation_score_mapping.inverse().get(curatedVariantAvro.getCurationScore()));
+                CurationScoreHelper.getCurationScoreInt(curatedVariantAvro.getCurationScore()));
         assertNotNull(curatedVariantAvro.getHistory());
         assertNotNull(curatedVariantAvro.getEvidences());
         assertNotNull(curatedVariantAvro.getComments());
@@ -147,16 +149,15 @@ public class KnownVariantTest {
         EvidenceEntry evidenceEntry = new EvidenceEntry();
         evidenceEntry.setSubmitter("test");
         evidenceEntry.setAlleleOrigin(AlleleOrigin.germline);
-        evidenceEntry.setSource(EvidenceSource.unknown);
-        evidenceEntry.setDatabaseName("whateverDB");
+        evidenceEntry.setSourceClass(SourceClass.unknown);
+        evidenceEntry.setSourceName("whateverDB");
         evidenceEntry.setDescription("This is a test known variant");
         evidenceEntry.setStudy("100KG");
         evidenceEntry.setNumberIndividuals(1);
-        evidenceEntry.setEthnicity("test");
-        evidenceEntry.setGeographicalOrigin("here");
+        evidenceEntry.setEthnicity(EthnicCategory.E);
         List<EvidencePhenotype> phenotypes = new ArrayList<EvidencePhenotype>();
         EvidencePhenotype evidencePhenotype = new EvidencePhenotype();
-        evidencePhenotype.setInheritanceMode(InheritanceMode.autosomal_recessive);
+        evidencePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_paternally_imprinted);
         evidencePhenotype.setPhenotype("TestPhenotype");
         phenotypes.add(evidencePhenotype);
         evidenceEntry.setPhenotypes(phenotypes);
