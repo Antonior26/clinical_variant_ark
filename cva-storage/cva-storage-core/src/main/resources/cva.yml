@@ -33,3 +33,10 @@ storageEngines:
       authenticationDatabase:
       connectionsPerHost: 20
       readPreference: "secondaryPreferred"
+
+# The organism values.
+organism:
+  taxonomyCode: 9606
+  scientificName: hsapiens
+  commonName: human
+  assembly: Grch38

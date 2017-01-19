@@ -24,6 +24,8 @@ public class CvaConfiguration {
     private String logFile;
     private CellBaseConfiguration cellbase;
     private List<StorageEngineConfiguration> storageEngines;
+    private OrganismConfiguration organism;
+
 
     public static CvaConfiguration load(InputStream configurationInputStream)
             throws IOException, IllegalCvaConfigurationException {
@@ -107,6 +109,14 @@ public class CvaConfiguration {
 
     public void setStorageEngines(List<StorageEngineConfiguration> storageEngines) {
         this.storageEngines = storageEngines;
+    }
+
+    public OrganismConfiguration getOrganism() {
+        return organism;
+    }
+
+    public void setOrganism(OrganismConfiguration organism) {
+        this.organism = organism;
     }
 
     public static void main(String [] args) throws IOException, IllegalCvaConfigurationException {
