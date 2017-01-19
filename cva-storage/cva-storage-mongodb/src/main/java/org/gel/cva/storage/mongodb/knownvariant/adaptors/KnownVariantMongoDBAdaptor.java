@@ -113,12 +113,7 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
     @Override
     public QueryResult insert(KnownVariant curatedVariant, QueryOptions options) {
         // Creates a set of converters
-        DocumentToCommentConverter commentConverter = new DocumentToCommentConverter();
-        DocumentToKnownVariantConverter curatedVariantConverter = new DocumentToKnownVariantConverter(
-                new DocumentToVariantConverter(null, null),
-                new DocumentToEvidenceEntryConverter(commentConverter),
-                commentConverter
-        );
+        DocumentToKnownVariantConverter curatedVariantConverter = new DocumentToKnownVariantConverter();
         Document curatedVariantDocument = curatedVariantConverter.convertToStorageType(curatedVariant);
         QueryResult result = this.curatedVariantsCollection.insert(curatedVariantDocument, options);
 

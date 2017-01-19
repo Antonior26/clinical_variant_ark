@@ -37,7 +37,7 @@ public class DocumentToEvidenceEntryConverterTest {
 
     @Before
     public void setup() {
-        this.evidenceEntryConverter = new DocumentToEvidenceEntryConverter(new DocumentToCommentConverter());
+        this.evidenceEntryConverter = new DocumentToEvidenceEntryConverter();
         EvidencePhenotype evidencePhenotype = new EvidencePhenotype("SO:000001", ReportedModeOfInheritance.biallelic);
         EvidencePhenotype evidencePhenotype2 = new EvidencePhenotype("SO:000002", ReportedModeOfInheritance.mitochondrial);
         this.phenotypes.add(evidencePhenotype);

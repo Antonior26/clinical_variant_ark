@@ -17,6 +17,8 @@
 package org.gel.cva.storage.core.knownvariant.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.gel.cva.storage.core.config.CvaConfiguration;
+import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.models.cva.avro.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
@@ -25,8 +27,10 @@ import org.opencb.opencga.storage.core.config.CellBaseConfiguration;
 import org.opencb.opencga.storage.core.config.DatabaseCredentials;
 import org.opencb.opencga.storage.core.config.StorageConfiguration;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
+import org.opencb.opencga.storage.core.variant.annotation.annotators.CellBaseDirectVariantAnnotator;
 import org.opencb.opencga.storage.core.variant.annotation.annotators.CellBaseRestVariantAnnotator;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
@@ -74,7 +78,7 @@ public class KnownVariant implements Serializable {
      * Constructor from the variant wrapper with default values for the KnownVariant specific values
      * @param variant the Variant wrapper
      */
-    public KnownVariant(Variant variant) throws VariantAnnotatorException {
+    public KnownVariant(Variant variant) throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException {
         //TODO: perform checks on the Variant, for example we don't want to store information from multiple samples
         //TODO: make annotation optional
         // so we may want to delete it
@@ -101,7 +105,8 @@ public class KnownVariant implements Serializable {
      */
     public KnownVariant(Variant variant, String curationClassification,
                         Integer curationScore, List curationHistory,
-                        List evidences, List comments) throws VariantAnnotatorException{
+                        List evidences, List comments)
+            throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException{
         this(variant);
         this.setCurationClassification(curationClassification);
         this.setCurationScore(curationScore);
@@ -300,22 +305,17 @@ public class KnownVariant implements Serializable {
         this.setEvidences(evidences);
     }
 
-    public void annotateVariant() throws VariantAnnotatorException {
-        Map options = new ObjectMap();
-        options.put("species", "hsapiens");
-        options.put("assembly", "Grch37");
-        StorageConfiguration storageConfiguration = new StorageConfiguration();
-        CellBaseConfiguration cellBaseConfiguration = new CellBaseConfiguration(
-                Arrays.asList("http://10.5.8.201:8080/cellbase-4.5.0-rc"), "v4",
-                new DatabaseCredentials(
-                        Arrays.asList("http://10.5.8.201:8080/cellbase-4.5.0-rc"), "", "",
-                        options));
-        storageConfiguration.setCellbase(cellBaseConfiguration);
-        CellBaseRestVariantAnnotator cellBaseRestVariantAnnotator = new CellBaseRestVariantAnnotator(
-                storageConfiguration, (ObjectMap)options);
+    public void annotateVariant() throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException {
+        CvaConfiguration cvaConfiguration = CvaConfiguration.load(
+                CvaConfiguration.class.getResourceAsStream("/cva.yml"));
+        ObjectMap options = new ObjectMap();
+        options.put("species", cvaConfiguration.getOrganism().getScientificName());
+        options.put("assembly", cvaConfiguration.getOrganism().getAssembly());
+        CellBaseDirectVariantAnnotator cellBaseDirectVariantAnnotator = new CellBaseDirectVariantAnnotator(
+                cvaConfiguration.getCellBaseStorageConfiguration(), options);
         List<VariantAnnotation> variantAnnotations = null;
         try {
-            variantAnnotations = cellBaseRestVariantAnnotator.annotate(Arrays.asList(this.getVariant()));
+            variantAnnotations = cellBaseDirectVariantAnnotator.annotate(Arrays.asList(this.getVariant()));
         }
         catch (Exception e) {
             //TODO: manage these errors

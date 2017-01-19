@@ -16,10 +16,13 @@
 
 package org.gel.cva.storage.mongodb.knownvariant.converters;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.bson.Document;
 import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
 import org.gel.models.cva.avro.*;
 import org.opencb.commons.datastore.core.ComplexTypeConverter;
+import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -28,7 +31,7 @@ import java.util.List;
 /**
  * @author Pablo Riesgo Ferreiro <pablo.ferreiro@genomicsengland.co.uk>
  */
-public class DocumentToCommentConverter implements ComplexTypeConverter<Comment, Document> {
+public class DocumentToCommentConverter extends GenericDocumentComplexConverter<Comment> {
 
     public static final String TEXT = "text";
     public static final String DATE = "date";
@@ -38,26 +41,6 @@ public class DocumentToCommentConverter implements ComplexTypeConverter<Comment,
      * Create a converter between {@link KnownVariant} and {@link Document} entities
      */
     public DocumentToCommentConverter() {
-
+        super(Comment.class);
     }
-
-    @Override
-    public Comment convertToDataModelType(Document object) {
-        Comment comment = new Comment();
-        comment.setText((String) object.get(TEXT));
-        comment.setDate((Long) object.get(DATE));
-        comment.setAuthor((String) object.get(AUTHOR));
-        return comment;
-    }
-
-    @Override
-    public Document convertToStorageType(Comment comment) {
-        // Creates an EvidenceEntry with the compulsory fields
-        Document mongoComment = new Document()
-                .append(TEXT, comment.getText())
-                .append(DATE, comment.getDate())
-                .append(AUTHOR, comment.getAuthor());
-        return mongoComment;
-    }
-
 }

@@ -15,6 +15,7 @@
  */
 package org.gel.cva.storage.core.knownvariant.dto;
 
+import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.models.cva.avro.*;
 import org.gel.models.report.avro.EthnicCategory;
 import org.gel.models.report.avro.ReportedModeOfInheritance;
@@ -26,6 +27,7 @@ import org.opencb.biodata.models.variant.*;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -85,7 +87,8 @@ public class KnownVariantTest {
     }
 
     @Test
-    public void testCreateCuratedVariantFromVariantAndDefaultValues() throws VariantAnnotatorException{
+    public void testCreateCuratedVariantFromVariantAndDefaultValues()
+            throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException{
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 
@@ -115,7 +118,8 @@ public class KnownVariantTest {
     }
 
     @Test
-    public void testCreateCuratedVariantFromVariant() throws VariantAnnotatorException {
+    public void testCreateCuratedVariantFromVariant()
+            throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException {
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 
@@ -166,7 +170,8 @@ public class KnownVariantTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateCuratedVariantIllegalClassification() throws VariantAnnotatorException {
+    public void testCreateCuratedVariantIllegalClassification()
+            throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException {
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 
@@ -180,7 +185,8 @@ public class KnownVariantTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateCuratedVariantIllegalScore() throws VariantAnnotatorException {
+    public void testCreateCuratedVariantIllegalScore()
+            throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException {
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 
@@ -194,7 +200,8 @@ public class KnownVariantTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testCreateCuratedVariantIllegalScore2() throws VariantAnnotatorException {
+    public void testCreateCuratedVariantIllegalScore2()
+            throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException {
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 
@@ -208,7 +215,8 @@ public class KnownVariantTest {
     }
 
     @Test
-    public void testAnnotation() throws VariantAnnotatorException{
+    public void testAnnotation()
+            throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException {
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 

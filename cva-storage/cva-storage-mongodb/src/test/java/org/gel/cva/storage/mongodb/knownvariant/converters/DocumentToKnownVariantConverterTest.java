@@ -1,6 +1,7 @@
 package org.gel.cva.storage.mongodb.knownvariant.converters;
 
 import org.bson.Document;
+import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
 import org.gel.models.cva.avro.*;
 import org.gel.models.report.avro.EthnicCategory;
@@ -11,6 +12,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 import org.opencb.opencga.storage.mongodb.variant.converters.DocumentToVariantConverter;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -47,11 +49,7 @@ public class DocumentToKnownVariantConverterTest {
     public void setup() {
         DocumentToCommentConverter commentConverter = new DocumentToCommentConverter();
         this.variantConverter = new DocumentToVariantConverter();
-        this.knownVariantConverter = new DocumentToKnownVariantConverter(
-                this.variantConverter,
-                new DocumentToEvidenceEntryConverter(commentConverter),
-                commentConverter
-        );
+        this.knownVariantConverter = new DocumentToKnownVariantConverter();
         // fill evidences
         EvidenceEntry evidenceEntry = new EvidenceEntry();
         evidenceEntry.setDate(this.date);
@@ -101,7 +99,8 @@ public class DocumentToKnownVariantConverterTest {
     }
 
     @Test
-    public void convertToStorageTypeTest() throws VariantAnnotatorException{
+    public void convertToStorageTypeTest()
+            throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException{
         Variant variant = new Variant("1", 12345, "A", "C");
         KnownVariant knownVariant = new KnownVariant(variant);
         knownVariant.setCurationClassification(this.curationClassification.toString());

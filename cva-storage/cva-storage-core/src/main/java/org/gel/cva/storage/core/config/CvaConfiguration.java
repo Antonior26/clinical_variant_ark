@@ -3,14 +3,18 @@ package org.gel.cva.storage.core.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
+import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
 import org.opencb.opencga.storage.core.config.CellBaseConfiguration;
 import org.opencb.opencga.storage.core.config.DatabaseCredentials;
+import org.opencb.opencga.storage.core.config.StorageConfiguration;
 import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -151,5 +155,11 @@ public class CvaConfiguration {
             false
         );
         return mongoCredentials;
+    }
+
+    public StorageConfiguration getCellBaseStorageConfiguration() {
+        StorageConfiguration storageConfiguration = new StorageConfiguration();
+        storageConfiguration.setCellbase(this.getCellbase());
+        return storageConfiguration;
     }
 }

@@ -17,9 +17,11 @@
 package org.gel.cva.storage.mongodb.knownvariant.converters;
 
 import org.bson.Document;
+import org.gel.cva.storage.core.knownvariant.dto.CurationScoreHelper;
 import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
-import org.gel.models.cva.avro.*;
-import org.gel.models.report.avro.*;
+import org.gel.models.cva.avro.Comment;
+import org.gel.models.cva.avro.CurationClassification;
+import org.gel.models.cva.avro.CurationHistoryEntry;
 import org.opencb.commons.datastore.core.ComplexTypeConverter;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
 
@@ -30,29 +32,20 @@ import java.util.List;
 /**
  * @author Pablo Riesgo Ferreiro <pablo.ferreiro@genomicsengland.co.uk>
  */
-public class DocumentToEvidenceEntryConverter extends GenericDocumentComplexConverter<EvidenceEntry> {
+public class DocumentToCurationHistoryEntryConverter extends GenericDocumentComplexConverter<CurationHistoryEntry> {
 
     public static final String DATE = "date";
-    public static final String SUBMITTER = "submitter";
-    public static final String SOURCE_NAME = "sourceName";
-    public static final String SOURCE_CLASS = "sourceClass";
-    public static final String SOURCE_VERSION = "sourceVersion";
-    public static final String SOURCE_URL = "sourceUrl";
-    public static final String ALLELE_ORIGIN = "alleleOrigin";
-    public static final String PHENOTYPES = "phenotypes";
-    public static final String PHENOTYPE = "phenotype";
-    public static final String INHERITANCE_MODE = "inheritanceMode";
-    public static final String PUBMED_ID = "pubmedId";
-    public static final String STUDY = "study";
-    public static final String NUMBER_INDIVIDUALS = "numberIndividuals";
-    public static final String ETHNICITY = "ethnicity";
-    public static final String DESCRIPTION = "description";
+    public static final String PREVIOUS_SCORE = "previousScore";
+    public static final String NEW_SCORE = "newScore";
+    public static final String PREVIOUS_CLASSIFICATION = "previousClassification";
+    public static final String NEW_CLASSIFICATION = "newClassification";
+    public static final String CURATOR = "curator";
     public static final String COMMENTS = "comments";
 
     /**
      * Create a converter between {@link KnownVariant} and {@link Document} entities
      */
-    public DocumentToEvidenceEntryConverter() {
-        super(EvidenceEntry.class);
+    public DocumentToCurationHistoryEntryConverter() {
+        super(CurationHistoryEntry.class);
     }
 }
