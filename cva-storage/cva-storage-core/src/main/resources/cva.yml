@@ -2,6 +2,7 @@
 defaultStorageEngineId: "mongodb"
 logLevel: "info"
 logFile: ""
+tempFolder: "/home/priesgo/.cva"
 
 ## CellBase client configuration, this is used mainly when annotating variants
 ## This can be set up using maven profiles in your .m2/settings.xml
@@ -29,6 +30,7 @@ storageEngines:
     options:
       database.name: "cva"
       collection.knownvariants: "known_variants"
+      adapter.knownvariants: "org.gel.cva.storage.mongodb.knownvariant.KnownVariantMongoDBAdaptor"
       ## Mongo specific options
       authenticationDatabase:
       connectionsPerHost: 20
@@ -39,4 +41,12 @@ organism:
   taxonomyCode: 9606
   scientificName: hsapiens
   commonName: human
-  assembly: Grch38
+  # Possible values: GRCh37 and GRCh38
+  assembly: GRCh38
+
+clinVar:
+  ftpServer: ftp.ncbi.nlm.nih.gov
+  user: anonymous
+  password:
+  # %s will be replaced with the organism.assembly value
+  assemblyFolder: pub/clinvar/vcf_%s

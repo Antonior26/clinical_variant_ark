@@ -19,6 +19,7 @@ package org.gel.cva.storage.core.knownvariant.dto;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.gel.cva.storage.core.config.CvaConfiguration;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
+import org.gel.cva.storage.core.helpers.CvaDateFormatter;
 import org.gel.models.cva.avro.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
@@ -32,6 +33,8 @@ import org.opencb.opencga.storage.core.variant.annotation.annotators.CellBaseRes
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -145,14 +148,20 @@ public class KnownVariant implements Serializable {
      */
     private List<EvidenceEntry> getDefaultEvidences() {
         EvidenceEntry evidenceEntry = new EvidenceEntry();
-        Date now = new Date();
-        evidenceEntry.setDate(now.getTime());
+        //Date now = new Date();
+        LocalDate now = LocalDate.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddhhmm");
+        evidenceEntry.setDate(CvaDateFormatter.getCurrentFormattedDate());
         evidenceEntry.setAlleleOrigin(AlleleOrigin.unknown);
         evidenceEntry.setSourceClass(SourceClass.unknown);
         evidenceEntry.setSubmitter("None");
         List evidences = new LinkedList<EvidenceEntry>();
         evidences.add(evidenceEntry);
         return evidences;
+    }
+
+    private EvidenceSource getDefaultEvidenceSource() {
+        
     }
 
     /**

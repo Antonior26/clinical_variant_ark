@@ -52,17 +52,34 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
 
     private boolean closeConnection;
-    private final MongoDataStoreManager mongoManager;
-    private final MongoDataStore db;
-    private final String collectionName;
-    private final MongoDBCollection curatedVariantsCollection;
-    private final MongoCredentials credentials;
+    private MongoDataStoreManager mongoManager;
+    private MongoDataStore db;
+    private String collectionName;
+    private MongoDBCollection curatedVariantsCollection;
+    private MongoCredentials credentials;
 
     @Deprecated
     private DataWriter dataWriter;
 
     protected static Logger logger = LoggerFactory.getLogger(KnownVariantMongoDBAdaptor.class);
 
+    public KnownVariantMongoDBAdaptor(CvaConfiguration cvaConfiguration)
+            throws IllegalCvaConfigurationException, IllegalOpenCGACredentialsException {
+        // Gets mongo credentials
+        this.credentials = cvaConfiguration.getMongoCredentials();
+        // Gets default database credentials
+        DatabaseCredentials databaseCredentials = cvaConfiguration.getDefaultDatabaseCredentials();
+        // Creates db adaptor
+        KnownVariantMongoDBAdaptor knownVariantMongoDBAdaptor = new KnownVariantMongoDBAdaptor(
+                mongoCredentials,
+                databaseCredentials.getOptions().get("collection.knownvariants"));
+        this(new MongoDataStoreManager(
+                this.credentials.getDataStoreServerAddresses()), this.credentials,
+                databaseCredentials.getOptions().get("collection.knownvariants"));
+        this.closeConnection = true;
+    }
+
+    /*
     private static KnownVariantMongoDBAdaptor singleton = null;
 
     public static KnownVariantMongoDBAdaptor getInstance()
@@ -93,7 +110,7 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
         this(new MongoDataStoreManager(
                 credentials.getDataStoreServerAddresses()), credentials, curatedVariantsCollectionName);
         this.closeConnection = true;
-    }
+    }*/
 
 
     private KnownVariantMongoDBAdaptor(MongoDataStoreManager mongoManager, MongoCredentials credentials,

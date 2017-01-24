@@ -3,7 +3,6 @@ package org.gel.cva.storage.core.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
-import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
 import org.opencb.opencga.storage.core.config.CellBaseConfiguration;
 import org.opencb.opencga.storage.core.config.DatabaseCredentials;
@@ -12,11 +11,7 @@ import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by priesgo on 18/01/17.
@@ -26,9 +21,11 @@ public class CvaConfiguration {
     private String defaultStorageEngineId;
     private String logLevel;
     private String logFile;
+    private String tempFolder;
     private CellBaseConfiguration cellbase;
     private List<StorageEngineConfiguration> storageEngines;
     private OrganismConfiguration organism;
+    private ClinVarConfiguration clinVar;
 
 
     public static CvaConfiguration load(InputStream configurationInputStream)
@@ -121,6 +118,22 @@ public class CvaConfiguration {
 
     public void setOrganism(OrganismConfiguration organism) {
         this.organism = organism;
+    }
+
+    public ClinVarConfiguration getClinVar() {
+        return clinVar;
+    }
+
+    public void setClinVar(ClinVarConfiguration clinVar) {
+        this.clinVar = clinVar;
+    }
+
+    public String getTempFolder() {
+        return tempFolder;
+    }
+
+    public void setTempFolder(String tempFolder) {
+        this.tempFolder = tempFolder;
     }
 
     public static void main(String [] args) throws IOException, IllegalCvaConfigurationException {
