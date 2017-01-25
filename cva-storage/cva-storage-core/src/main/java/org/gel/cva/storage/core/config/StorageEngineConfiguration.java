@@ -22,6 +22,7 @@ import org.opencb.opencga.storage.core.config.StorageEtlConfiguration;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by imedina on 01/05/15.
@@ -29,14 +30,14 @@ import java.util.List;
 public class StorageEngineConfiguration {
 
     private String id;
-    private ObjectMap options;
+    private Map<String, String> options;
     private DatabaseCredentials database;
 
     public StorageEngineConfiguration() {
 
     }
 
-    public StorageEngineConfiguration(String id, DatabaseCredentials database, ObjectMap options) {
+    public StorageEngineConfiguration(String id, DatabaseCredentials database, Map<String, String> options) {
         this.id = id;
         this.database = database;
         this.options = options;
@@ -52,6 +53,10 @@ public class StorageEngineConfiguration {
         return sb.toString();
     }
 
+    /////////////////////////////////////////////////////////////
+    //  Getters and setters                                   ///
+    /////////////////////////////////////////////////////////////
+
     public String getId() {
         return id;
     }
@@ -60,11 +65,11 @@ public class StorageEngineConfiguration {
         this.id = id;
     }
 
-    public ObjectMap getOptions() {
+    public Map<String, String> getOptions() {
         return options;
     }
 
-    public void setOptions(ObjectMap options) {
+    public void setOptions(Map<String, String> options) {
         this.options = options;
     }
 

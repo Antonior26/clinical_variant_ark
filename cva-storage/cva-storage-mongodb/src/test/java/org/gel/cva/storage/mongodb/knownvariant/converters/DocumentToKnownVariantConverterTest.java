@@ -2,6 +2,7 @@ package org.gel.cva.storage.mongodb.knownvariant.converters;
 
 import org.bson.Document;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
+import org.gel.cva.storage.core.helpers.CvaDateFormatter;
 import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
 import org.gel.models.cva.avro.*;
 import org.gel.models.report.avro.EthnicCategory;
@@ -30,8 +31,7 @@ public class DocumentToKnownVariantConverterTest {
     private Integer curationScore = 5;
     private List<EvidenceEntry> evidences = new LinkedList<EvidenceEntry>();
     private List<Comment> comments = new LinkedList<Comment>();
-    Date now = new Date();
-    Long date = now.getTime();
+    String date = CvaDateFormatter.getCurrentFormattedDate();
     String submitter = "Mr.Test";
     String sourceName = "RiskDB";
     SourceClass sourceClass = SourceClass.unknown;
@@ -54,10 +54,12 @@ public class DocumentToKnownVariantConverterTest {
         EvidenceEntry evidenceEntry = new EvidenceEntry();
         evidenceEntry.setDate(this.date);
         evidenceEntry.setSubmitter(this.submitter);
-        evidenceEntry.setSourceName(this.sourceName);
-        evidenceEntry.setSourceClass(this.sourceClass);
-        evidenceEntry.setSourceVersion(this.sourceVersion);
-        evidenceEntry.setSourceUrl(this.sourceUrl);
+        EvidenceSource evidenceSource = new EvidenceSource();
+        evidenceSource.setName(this.sourceName);
+        evidenceSource.setClass$(this.sourceClass);
+        evidenceSource.setVersion(this.sourceVersion);
+        evidenceSource.setUrl(this.sourceUrl);
+        evidenceEntry.setSource(evidenceSource);
         evidenceEntry.setAlleleOrigin(this.alleleOrigin);
         EvidencePhenotype evidencePhenotype = new EvidencePhenotype("SO:000001", ReportedModeOfInheritance.biallelic);
         EvidencePhenotype evidencePhenotype2 = new EvidencePhenotype("SO:000002", ReportedModeOfInheritance.mitochondrial);
@@ -72,11 +74,11 @@ public class DocumentToKnownVariantConverterTest {
         evidenceEntry.setComments(this.comments);
         // fill comments
         Comment comment = new Comment();
-        comment.setDate(new Long(1234));
+        comment.setDate(CvaDateFormatter.getCurrentFormattedDate());
         comment.setAuthor("author_comment1");
         comment.setText("a very interesting comment");
         Comment comment2 = new Comment();
-        comment2.setDate(new Long(5678));
+        comment2.setDate(CvaDateFormatter.getCurrentFormattedDate());
         comment2.setAuthor("author_comment2");
         comment2.setText("a more interesting comment");
         this.comments.add(comment);

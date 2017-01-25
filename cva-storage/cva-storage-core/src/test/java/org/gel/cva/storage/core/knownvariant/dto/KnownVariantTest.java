@@ -24,10 +24,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.opencb.biodata.models.variant.*;
-import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,7 +58,7 @@ public class KnownVariantTest {
         assertEquals(1, knownVariant.getEvidences().size());
         EvidenceEntry defaultEvidenceEntry = (EvidenceEntry)knownVariant.getEvidences().get(0);
         assertEquals(AlleleOrigin.unknown, defaultEvidenceEntry.getAlleleOrigin());
-        assertEquals(SourceClass.unknown, defaultEvidenceEntry.getSourceClass());
+        assertEquals(SourceClass.unknown, defaultEvidenceEntry.getSource().getClass$());
         assertEquals("None", defaultEvidenceEntry.getSubmitter());
     }
 
@@ -70,7 +68,7 @@ public class KnownVariantTest {
         assertEquals("VUS", knownVariant.getCurationClassification());
         assertEquals(new Integer(0), knownVariant.getCurationScore());
         assertNotNull(knownVariant.getCurationHistory());
-        assertEquals(0, knownVariant.getCurationHistory().size());
+        assertEquals(1, knownVariant.getCurationHistory().size());
         this.testDefaultEvidenceEntry(knownVariant);
         assertNotNull(knownVariant.getComments());
         assertEquals(0, knownVariant.getComments().size());
@@ -88,7 +86,7 @@ public class KnownVariantTest {
 
     @Test
     public void testCreateCuratedVariantFromVariantAndDefaultValues()
-            throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException{
+            throws VariantAnnotatorException, IllegalCvaConfigurationException{
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 
@@ -100,7 +98,7 @@ public class KnownVariantTest {
         assertEquals("VUS", knownVariant.getCurationClassification());
         assertEquals(new Integer(0), knownVariant.getCurationScore());
         assertNotNull(knownVariant.getCurationHistory());
-        assertEquals(0, knownVariant.getCurationHistory().size());
+        assertEquals(1, knownVariant.getCurationHistory().size());
         this.testDefaultEvidenceEntry(knownVariant);
         assertNotNull(knownVariant.getComments());
         assertEquals(0, knownVariant.getComments().size());
@@ -119,7 +117,7 @@ public class KnownVariantTest {
 
     @Test
     public void testCreateCuratedVariantFromVariant()
-            throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException {
+            throws VariantAnnotatorException, IllegalCvaConfigurationException {
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 
@@ -133,7 +131,7 @@ public class KnownVariantTest {
         assertEquals("disease_associated_variant", knownVariant.getCurationClassification());
         assertEquals(new Integer(5), knownVariant.getCurationScore());
         assertNotNull(knownVariant.getCurationHistory());
-        assertEquals(0, knownVariant.getCurationHistory().size());
+        assertEquals(1, knownVariant.getCurationHistory().size());
         this.testDefaultEvidenceEntry(knownVariant);
         assertNotNull(knownVariant.getComments());
         assertEquals(0, knownVariant.getComments().size());
@@ -153,8 +151,10 @@ public class KnownVariantTest {
         EvidenceEntry evidenceEntry = new EvidenceEntry();
         evidenceEntry.setSubmitter("test");
         evidenceEntry.setAlleleOrigin(AlleleOrigin.germline);
-        evidenceEntry.setSourceClass(SourceClass.unknown);
-        evidenceEntry.setSourceName("whateverDB");
+        EvidenceSource evidenceSource = new EvidenceSource();
+        evidenceSource.setClass$(SourceClass.unknown);
+        evidenceSource.setName("whateverDB");
+        evidenceEntry.setSource(evidenceSource);
         evidenceEntry.setDescription("This is a test known variant");
         evidenceEntry.setStudy("100KG");
         evidenceEntry.setNumberIndividuals(1);
@@ -171,7 +171,7 @@ public class KnownVariantTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateCuratedVariantIllegalClassification()
-            throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException {
+            throws VariantAnnotatorException, IllegalCvaConfigurationException {
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 
@@ -186,7 +186,7 @@ public class KnownVariantTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateCuratedVariantIllegalScore()
-            throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException {
+            throws VariantAnnotatorException, IllegalCvaConfigurationException {
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 
@@ -201,7 +201,7 @@ public class KnownVariantTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCreateCuratedVariantIllegalScore2()
-            throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException {
+            throws VariantAnnotatorException, IllegalCvaConfigurationException {
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 
@@ -216,7 +216,7 @@ public class KnownVariantTest {
 
     @Test
     public void testAnnotation()
-            throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException {
+            throws VariantAnnotatorException, IllegalCvaConfigurationException {
         // Test when there are differences at the end of the sequence
         String line = "1\t1000\t.\tTCACCC\tTGACGG\t.\t.\t.";
 

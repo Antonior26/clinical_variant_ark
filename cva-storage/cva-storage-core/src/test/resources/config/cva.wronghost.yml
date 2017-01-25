@@ -28,7 +28,7 @@ storageEngines:
     adaptor.knownvariants: "org.gel.cva.storage.mongodb.knownvariant.adaptors.KnownVariantMongoDBAdaptor"
   database:
     hosts:
-    - "localhost:27017"
+    - "localhost"
     user: ""
     password: ""
     options:

@@ -16,12 +16,6 @@
 
     <dependencies>
         <!-- Intra-module dependencies -->
-
-        <dependency>
-            <groupId>org.gel.cva</groupId>
-            <artifactId>cva-storage-mongodb</artifactId>
-            <version>1.0</version>
-        </dependency>
     </dependencies>
 
 </project>

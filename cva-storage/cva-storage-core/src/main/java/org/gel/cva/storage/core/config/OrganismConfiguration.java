@@ -10,6 +10,10 @@ public class OrganismConfiguration {
     private String commonName;
     private String assembly;
 
+    /////////////////////////////////////////////////////////////
+    //  Getters and setters                                   ///
+    /////////////////////////////////////////////////////////////
+
     public String getTaxonomyCode() {
         return taxonomyCode;
     }

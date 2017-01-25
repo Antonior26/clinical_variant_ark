@@ -1,6 +1,7 @@
 package org.gel.cva.storage.mongodb.knownvariant.converters;
 
 import org.bson.Document;
+import org.gel.cva.storage.core.helpers.CvaDateFormatter;
 import org.gel.models.cva.avro.*;
 import org.gel.models.report.avro.ReportedModeOfInheritance;
 import org.junit.Before;
@@ -18,8 +19,7 @@ import static org.junit.Assert.assertEquals;
 public class DocumentToCurationHistoryEntryConverterTest {
 
     private DocumentToCurationHistoryEntryConverter curationHistoryEntryConverter;
-    private Date now = new Date();
-    private Long date = now.getTime();
+    private String date = CvaDateFormatter.getCurrentFormattedDate();
     private CurationScore previousScore = CurationScore.CURATION_CONFIDENCE_5;
     private CurationScore newScore = CurationScore.CURATION_CONFIDENCE_1;
     private CurationClassification previousClassification = CurationClassification.disease_causing_variant;
@@ -31,11 +31,11 @@ public class DocumentToCurationHistoryEntryConverterTest {
     public void setup() {
         this.curationHistoryEntryConverter = new DocumentToCurationHistoryEntryConverter();
         Comment comment = new Comment();
-        comment.setDate(new Long(1234));
+        comment.setDate(CvaDateFormatter.getCurrentFormattedDate());
         comment.setAuthor("author_comment1");
         comment.setText("a very interesting comment");
         Comment comment2 = new Comment();
-        comment2.setDate(new Long(5678));
+        comment2.setDate(CvaDateFormatter.getCurrentFormattedDate());
         comment2.setAuthor("author_comment2");
         comment2.setText("a more interesting comment");
         this.comments.add(comment);

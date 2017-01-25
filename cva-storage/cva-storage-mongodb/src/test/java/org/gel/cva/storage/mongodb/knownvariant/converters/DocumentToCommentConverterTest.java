@@ -1,6 +1,7 @@
 package org.gel.cva.storage.mongodb.knownvariant.converters;
 
 import org.bson.Document;
+import org.gel.cva.storage.core.helpers.CvaDateFormatter;
 import org.gel.models.cva.avro.Comment;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,8 +18,7 @@ public class DocumentToCommentConverterTest {
     private DocumentToCommentConverter commentConverter;
     private String text = "This is a test comment";
     private String author = "Mr.Test";
-    private Date now = new Date();
-    private Long date = now.getTime();
+    private String date = CvaDateFormatter.getCurrentFormattedDate();
 
     @Before
     public void setup() {

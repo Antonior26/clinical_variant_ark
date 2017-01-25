@@ -3,6 +3,8 @@ package org.gel.cva.storage.core.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
+import org.gel.cva.storage.core.exceptions.IllegalCvaCredentialsException;
+import org.gel.cva.storage.core.helpers.CvaDateFormatter;
 import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
 import org.opencb.opencga.storage.core.config.CellBaseConfiguration;
 import org.opencb.opencga.storage.core.config.DatabaseCredentials;
@@ -12,6 +14,7 @@ import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Created by priesgo on 18/01/17.
@@ -27,50 +30,155 @@ public class CvaConfiguration {
     private OrganismConfiguration organism;
     private ClinVarConfiguration clinVar;
 
+    private static CvaConfiguration instance = null;
+    private static final String CONFIG_FILE = "/cva.yml";
+    private static final String CONFIG_FORMAT = "yaml";
 
-    public static CvaConfiguration load(InputStream configurationInputStream)
-            throws IOException, IllegalCvaConfigurationException {
-        return load(configurationInputStream, "yaml");
+    // TODO: setup logging
+    // TODO: print confguration overwriting toString()
+
+    /**
+     * Private default constructor
+     */
+    private CvaConfiguration() {
+
     }
 
+    /**
+     * Getter for the instance of this singleton
+     * @return      the CvaConfiguration singleton
+     * @throws IllegalCvaConfigurationException
+     */
+    public static CvaConfiguration getInstance() throws IllegalCvaConfigurationException {
+        if (CvaConfiguration.instance == null) {
+            InputStream configStream = CvaConfiguration.class.getResourceAsStream(CvaConfiguration.CONFIG_FILE);
+            CvaConfiguration.load(configStream, CvaConfiguration.CONFIG_FORMAT);
+        }
+        return CvaConfiguration.instance;
+    }
+
+    /**
+     * Loads a config file in memory and runs basic sanity checks
+     * @param configurationInputStream  the config file
+     * @param format                    the format (any of "json", "yml", "yaml")
+     * @return                          the CvaConfiguration singleton
+     * @throws IllegalCvaConfigurationException
+     */
     public static CvaConfiguration load(InputStream configurationInputStream, String format)
-            throws IOException, IllegalCvaConfigurationException {
+            throws IllegalCvaConfigurationException {
         CvaConfiguration cvaConfiguration;
         ObjectMapper objectMapper;
-        switch (format) {
-            case "json":
-                objectMapper = new ObjectMapper();
-                cvaConfiguration = objectMapper.readValue(configurationInputStream, CvaConfiguration.class);
-                break;
-            case "yml":
-            case "yaml":
-            default:
-                objectMapper = new ObjectMapper(new YAMLFactory());
-                cvaConfiguration = objectMapper.readValue(configurationInputStream, CvaConfiguration.class);
-                break;
+        try {
+            switch (format) {
+                case "json":
+                    objectMapper = new ObjectMapper();
+                    cvaConfiguration = objectMapper.readValue(configurationInputStream, CvaConfiguration.class);
+                    break;
+                case "yml":
+                case "yaml":
+                default:
+                    objectMapper = new ObjectMapper(new YAMLFactory());
+                    cvaConfiguration = objectMapper.readValue(configurationInputStream, CvaConfiguration.class);
+                    break;
+            }
+        }
+        catch (IOException ex) {
+            throw new IllegalCvaConfigurationException("Something is very wrong in the CVA config file:" + ex.getMessage());
         }
         cvaConfiguration.sanityChecks();
+        CvaConfiguration.instance = cvaConfiguration;
         return cvaConfiguration;
     }
 
-    private void sanityChecks () throws IllegalCvaConfigurationException{
-        // Checks that MongoDB storage is configured
-        if (! this.getDefaultStorageEngineId().equals("mongodb")) {
-            throw new IllegalCvaConfigurationException("CVA ClinVar loader only supports mongoDB as storage");
+    /**
+     * Retrieves the default StorageEngineConfiguration as stated in "defaultStorageEngineId"
+     * @return      Default StorageEngineConfiguration
+     */
+    public static StorageEngineConfiguration getDefaultStorageEngine() throws IllegalCvaConfigurationException {
+        String defaultStorageEngineId = CvaConfiguration.getInstance().getDefaultStorageEngineId();
+        StorageEngineConfiguration defaultStorageEngineConfiguration = CvaConfiguration.getInstance().getStorageEngines().stream()
+                .filter((storageEngine) -> storageEngine.getId().equals(defaultStorageEngineId))
+                .findFirst().get();
+        return defaultStorageEngineConfiguration;
+    }
+
+    /**
+     * Retrieves the Mongo credentials object for CVA storage
+     * @return      Mongo credentials
+     * @throws IllegalCvaConfigurationException
+     * @throws IllegalCvaCredentialsException
+     */
+    // TODO: avoid using MongoCredentials in opencga.storage, use instead MongoDBConfiguration
+    public static MongoCredentials getMongoCredentials() throws IllegalCvaConfigurationException, IllegalCvaCredentialsException {
+        DatabaseCredentials databaseCredentials = CvaConfiguration.getDefaultStorageEngine().getDatabase();
+        //TODO: make this somehow more secure to misconfiguration
+        String host = databaseCredentials.getHosts().get(0).split(":")[0];
+        String port = databaseCredentials.getHosts().get(0).split(":")[1];
+        MongoCredentials mongoCredentials = null;
+        // TODO: com.mongodb.MongoSocketOpenException is not controlled when server not reachable
+        // TODO: com.mongodb.MongoSocketOpenException is not controlled when credentials are incorrect
+        try {
+            mongoCredentials = new MongoCredentials(
+                    host,
+                    Integer.parseInt(port),
+                    CvaConfiguration.getDefaultStorageEngine().getOptions().get("database.name"),
+                    databaseCredentials.getUser(),
+                    databaseCredentials.getPassword(),
+                    true
+            );
         }
-        DatabaseCredentials databaseCredentials = null;
-        for (StorageEngineConfiguration storageEngineConfiguration : this.getStorageEngines()) {
-            if (storageEngineConfiguration.getId().equals(this.getDefaultStorageEngineId())) {
-                databaseCredentials = storageEngineConfiguration.getDatabase();
-                break;
+        catch (IllegalOpenCGACredentialsException ex) {
+            throw new IllegalCvaCredentialsException(ex.getMessage());
+        }
+        return mongoCredentials;
+    }
+
+    /**
+     * Returns the StorageConfiguration for CellBase
+     * @return      Cellbase StorageConfiguration
+     */
+    public static StorageConfiguration getCellBaseStorageConfiguration() throws IllegalCvaConfigurationException {
+        StorageConfiguration storageConfiguration = new StorageConfiguration();
+        storageConfiguration.setCellbase(CvaConfiguration.getInstance().getCellbase());
+        return storageConfiguration;
+    }
+
+    /**
+     * Runs sanity checks on the CVA configuration
+     * @throws IllegalCvaConfigurationException
+     */
+    private void sanityChecks () throws IllegalCvaConfigurationException{
+
+        // Sanity checks on the CVA storage configuration
+        StorageEngineConfiguration storageEngineConfiguration = null;
+        try {
+            String defaultStorageEngineId = this.getDefaultStorageEngineId();
+            storageEngineConfiguration = this.getStorageEngines().stream()
+                    .filter((storageEngine) -> storageEngine.getId().equals(defaultStorageEngineId))
+                    .findFirst().get();
+        }
+        catch (NoSuchElementException ex) {
+            throw new IllegalCvaConfigurationException("CVA requires the default storage to be configured: " + ex.getMessage());
+        }
+        if (storageEngineConfiguration == null ||
+                storageEngineConfiguration.getDatabase() == null ||
+                storageEngineConfiguration.getDatabase().getHosts().size() < 1) {
+            throw new IllegalCvaConfigurationException("CVA requires the default storage to be configured");
+        }
+        for (String host: storageEngineConfiguration.getDatabase().getHosts()) {
+            if (! host.matches("^\\S+:\\d+$")) {
+                throw new IllegalCvaConfigurationException("CVA storage hosts require to be defined as \"host:port\"");
             }
         }
-        if (databaseCredentials == null || databaseCredentials.getHosts().size() < 1) {
-            throw new IllegalCvaConfigurationException("CVA ClinVar loader requires mongoDB as storage");
-        }
-        //TODO: check that host follows pattern host:port
-        //TODO: check that cellbase is configured properly
+
+        //TODO: Sanity checks on the Cellbase configuration
+        // Either webservices or database connection must be set
+        // Should we allow not connecting Cellbase and not annotating mutations in that case??
     }
+
+    /////////////////////////////////////////////////////////////
+    //  Getters and setters                                   ///
+    /////////////////////////////////////////////////////////////
 
     public String getDefaultStorageEngineId() {
         return defaultStorageEngineId;
@@ -136,43 +244,4 @@ public class CvaConfiguration {
         this.tempFolder = tempFolder;
     }
 
-    public static void main(String [] args) throws IOException, IllegalCvaConfigurationException {
-        InputStream configStream = CvaConfiguration.class.getResourceAsStream("/cva.yml");
-        CvaConfiguration cvaConfiguration = CvaConfiguration.load(configStream);
-        int i = 0;
-    }
-
-    public DatabaseCredentials getDefaultDatabaseCredentials() {
-        DatabaseCredentials databaseCredentials = null;
-        for (StorageEngineConfiguration storageEngineConfiguration : this.getStorageEngines()) {
-            if (storageEngineConfiguration.getId().equals(this.getDefaultStorageEngineId())) {
-                databaseCredentials = storageEngineConfiguration.getDatabase();
-                break;
-            }
-        }
-        // this will never be null as we have ran before the sanity checks
-        return databaseCredentials;
-    }
-
-    public MongoCredentials getMongoCredentials() throws IllegalOpenCGACredentialsException {
-        DatabaseCredentials databaseCredentials = this.getDefaultDatabaseCredentials();
-        //TODO: make this somehow more secure to misconfiguration
-        String host = databaseCredentials.getHosts().get(0).split(":")[0];
-        String port = databaseCredentials.getHosts().get(0).split(":")[1];
-        MongoCredentials mongoCredentials = new MongoCredentials(
-            host,
-            Integer.parseInt(port),
-            databaseCredentials.getOptions().get("database.name"),
-            databaseCredentials.getUser(),
-            databaseCredentials.getPassword(),
-            false
-        );
-        return mongoCredentials;
-    }
-
-    public StorageConfiguration getCellBaseStorageConfiguration() {
-        StorageConfiguration storageConfiguration = new StorageConfiguration();
-        storageConfiguration.setCellbase(this.getCellbase());
-        return storageConfiguration;
-    }
 }

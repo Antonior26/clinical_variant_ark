@@ -20,8 +20,7 @@ package org.gel.cva.storage.mongodb.knownvariant.adaptors;
 import org.bson.Document;
 import org.gel.cva.storage.core.config.CvaConfiguration;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
-import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToCommentConverter;
-import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToEvidenceEntryConverter;
+import org.gel.cva.storage.core.exceptions.IllegalCvaCredentialsException;
 import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToKnownVariantConverter;
 import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
 import org.opencb.commons.datastore.core.QueryOptions;
@@ -32,17 +31,15 @@ import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 import org.opencb.commons.io.DataWriter;
 import org.gel.cva.storage.core.knownvariant.adaptors.KnownVariantDBAdaptor;
 import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
-import org.opencb.opencga.storage.core.config.DatabaseCredentials;
 import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;
-import org.opencb.opencga.storage.mongodb.variant.converters.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
-import java.net.UnknownHostException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.opencb.opencga.storage.mongodb.variant.adaptors.VariantMongoDBAdaptor.NUMBER_INSTANCES;
 
 /**
  * @author Ignacio Medina <igmecas@gmail.com>
@@ -64,68 +61,16 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
     protected static Logger logger = LoggerFactory.getLogger(KnownVariantMongoDBAdaptor.class);
 
     public KnownVariantMongoDBAdaptor(CvaConfiguration cvaConfiguration)
-            throws IllegalCvaConfigurationException, IllegalOpenCGACredentialsException {
+            throws IllegalCvaConfigurationException, IllegalCvaCredentialsException {
         // Gets mongo credentials
-        this.credentials = cvaConfiguration.getMongoCredentials();
-        // Gets default database credentials
-        DatabaseCredentials databaseCredentials = cvaConfiguration.getDefaultDatabaseCredentials();
-        // Creates db adaptor
-        KnownVariantMongoDBAdaptor knownVariantMongoDBAdaptor = new KnownVariantMongoDBAdaptor(
-                mongoCredentials,
-                databaseCredentials.getOptions().get("collection.knownvariants"));
-        this(new MongoDataStoreManager(
-                this.credentials.getDataStoreServerAddresses()), this.credentials,
-                databaseCredentials.getOptions().get("collection.knownvariants"));
-        this.closeConnection = true;
-    }
-
-    /*
-    private static KnownVariantMongoDBAdaptor singleton = null;
-
-    public static KnownVariantMongoDBAdaptor getInstance()
-            throws IllegalCvaConfigurationException, IOException, IllegalOpenCGACredentialsException {
-        if (singleton == null) {
-            // Reads config file
-            CvaConfiguration cvaConfiguration = CvaConfiguration.load(
-                    CvaConfiguration.class.getResourceAsStream("/cva.yml"));
-            // Gets mongo credentials
-            MongoCredentials mongoCredentials = cvaConfiguration.getMongoCredentials();
-            // Gets default database credentials
-            DatabaseCredentials databaseCredentials = cvaConfiguration.getDefaultDatabaseCredentials();
-            // Creates db adaptor
-            KnownVariantMongoDBAdaptor knownVariantMongoDBAdaptor = new KnownVariantMongoDBAdaptor(
-                    mongoCredentials,
-                    databaseCredentials.getOptions().get("collection.knownvariants"));
-            KnownVariantMongoDBAdaptor.singleton = knownVariantMongoDBAdaptor;
-        }
-        return KnownVariantMongoDBAdaptor.singleton;
-    }
-
-    // Number of opened dbAdaptors
-    public static final AtomicInteger NUMBER_INSTANCES = new AtomicInteger(0);
-
-
-    private KnownVariantMongoDBAdaptor(MongoCredentials credentials, String curatedVariantsCollectionName)
-            throws UnknownHostException {
-        this(new MongoDataStoreManager(
-                credentials.getDataStoreServerAddresses()), credentials, curatedVariantsCollectionName);
-        this.closeConnection = true;
-    }*/
-
-
-    private KnownVariantMongoDBAdaptor(MongoDataStoreManager mongoManager, MongoCredentials credentials,
-                                      String curatedVariantsCollectionName)
-            throws UnknownHostException {
-        // MongoDB configuration
+        this.credentials = CvaConfiguration.getMongoCredentials();
         this.closeConnection = false;
-        this.credentials = credentials;
-        this.mongoManager = mongoManager;
+        this.mongoManager = new MongoDataStoreManager(this.credentials.getDataStoreServerAddresses());
         this.db = mongoManager.get(credentials.getMongoDbName(), credentials.getMongoDBConfiguration());
-        this.collectionName = curatedVariantsCollectionName;
+        this.collectionName = cvaConfiguration.getStorageEngines().get(0).getOptions().get("collection.knownvariants");
         this.curatedVariantsCollection = db.getCollection(collectionName);
         NUMBER_INSTANCES.incrementAndGet();
     }
-
 
     @Override
     public QueryResult insert(KnownVariant curatedVariant, QueryOptions options) {
@@ -136,7 +81,6 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
 
         return result;
     }
-
 
     @Override
     public QueryResult insert(List<KnownVariant> curatedVariants, QueryOptions options) {

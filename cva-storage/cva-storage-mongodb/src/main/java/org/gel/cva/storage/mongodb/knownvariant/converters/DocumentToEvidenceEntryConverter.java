@@ -34,10 +34,11 @@ public class DocumentToEvidenceEntryConverter extends GenericDocumentComplexConv
 
     public static final String DATE = "date";
     public static final String SUBMITTER = "submitter";
-    public static final String SOURCE_NAME = "sourceName";
-    public static final String SOURCE_CLASS = "sourceClass";
-    public static final String SOURCE_VERSION = "sourceVersion";
-    public static final String SOURCE_URL = "sourceUrl";
+    public static final String SOURCE = "source";
+    public static final String SOURCE_NAME = "name";
+    public static final String SOURCE_CLASS = "class$";
+    public static final String SOURCE_VERSION = "version";
+    public static final String SOURCE_URL = "url";
     public static final String ALLELE_ORIGIN = "alleleOrigin";
     public static final String PHENOTYPES = "phenotypes";
     public static final String PHENOTYPE = "phenotype";

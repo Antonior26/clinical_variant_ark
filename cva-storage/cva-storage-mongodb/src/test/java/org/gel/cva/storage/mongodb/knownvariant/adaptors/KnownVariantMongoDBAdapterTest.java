@@ -1,5 +1,6 @@
 package org.gel.cva.storage.mongodb.knownvariant.adaptors;
 
+import org.gel.cva.storage.core.config.CvaConfiguration;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +37,8 @@ public class KnownVariantMongoDBAdapterTest {
                 "fileId",
                 "studyId",
                 "studyName");
-        this.curatedVariantMongoDBAdaptor = KnownVariantMongoDBAdaptor.getInstance();
+        CvaConfiguration cvaConfiguration = CvaConfiguration.getInstance();
+        this.curatedVariantMongoDBAdaptor = new KnownVariantMongoDBAdaptor(cvaConfiguration);
     }
 
     @Test

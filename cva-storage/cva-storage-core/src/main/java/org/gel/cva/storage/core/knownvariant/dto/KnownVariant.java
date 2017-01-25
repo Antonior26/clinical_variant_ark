@@ -24,17 +24,10 @@ import org.gel.models.cva.avro.*;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.commons.datastore.core.ObjectMap;
-import org.opencb.opencga.storage.core.config.CellBaseConfiguration;
-import org.opencb.opencga.storage.core.config.DatabaseCredentials;
-import org.opencb.opencga.storage.core.config.StorageConfiguration;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 import org.opencb.opencga.storage.core.variant.annotation.annotators.CellBaseDirectVariantAnnotator;
-import org.opencb.opencga.storage.core.variant.annotation.annotators.CellBaseRestVariantAnnotator;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 /**
@@ -81,7 +74,8 @@ public class KnownVariant implements Serializable {
      * Constructor from the variant wrapper with default values for the KnownVariant specific values
      * @param variant the Variant wrapper
      */
-    public KnownVariant(Variant variant) throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException {
+    public KnownVariant(Variant variant)
+            throws VariantAnnotatorException, IllegalCvaConfigurationException {
         //TODO: perform checks on the Variant, for example we don't want to store information from multiple samples
         //TODO: make annotation optional
         // so we may want to delete it
@@ -109,7 +103,7 @@ public class KnownVariant implements Serializable {
     public KnownVariant(Variant variant, String curationClassification,
                         Integer curationScore, List curationHistory,
                         List evidences, List comments)
-            throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException{
+            throws VariantAnnotatorException, IllegalCvaConfigurationException{
         this(variant);
         this.setCurationClassification(curationClassification);
         this.setCurationScore(curationScore);
@@ -139,7 +133,15 @@ public class KnownVariant implements Serializable {
      * @return
      */
     private List<CurationHistoryEntry> getDefaultCurationHistory() {
-        return new LinkedList<CurationHistoryEntry>();
+        //TODO: add default curator being the same as the submitter
+        LinkedList curationHistory = new LinkedList<CurationHistoryEntry>();
+        CurationHistoryEntry curationHistoryEntry = new CurationHistoryEntry();
+        curationHistoryEntry.setDate(CvaDateFormatter.getCurrentFormattedDate());
+        curationHistoryEntry.setNewClassification(this.getDefaultCurationClassification());
+        curationHistoryEntry.setNewScore(this.getDefaultCurationScore());
+        curationHistoryEntry.setComments(this.getDefaultComments());
+        curationHistory.add(curationHistoryEntry);
+        return curationHistory;
     }
 
     /**
@@ -148,12 +150,9 @@ public class KnownVariant implements Serializable {
      */
     private List<EvidenceEntry> getDefaultEvidences() {
         EvidenceEntry evidenceEntry = new EvidenceEntry();
-        //Date now = new Date();
-        LocalDate now = LocalDate.now();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddhhmm");
         evidenceEntry.setDate(CvaDateFormatter.getCurrentFormattedDate());
         evidenceEntry.setAlleleOrigin(AlleleOrigin.unknown);
-        evidenceEntry.setSourceClass(SourceClass.unknown);
+        evidenceEntry.setSource(this.getDefaultEvidenceSource());
         evidenceEntry.setSubmitter("None");
         List evidences = new LinkedList<EvidenceEntry>();
         evidences.add(evidenceEntry);
@@ -161,7 +160,9 @@ public class KnownVariant implements Serializable {
     }
 
     private EvidenceSource getDefaultEvidenceSource() {
-        
+        EvidenceSource evidenceSource = new EvidenceSource();
+        evidenceSource.setClass$(SourceClass.unknown);
+        return evidenceSource;
     }
 
     /**
@@ -302,8 +303,8 @@ public class KnownVariant implements Serializable {
         if (evidenceEntry.getSubmitter() == null || evidenceEntry.getSubmitter().equals("")){
             throw new IllegalArgumentException("Submitter is required to register an evidence");
         }
-        if (evidenceEntry.getSourceClass() == null) {
-            evidenceEntry.setSourceClass(SourceClass.unknown);
+        if (evidenceEntry.getSource() == null) {
+            evidenceEntry.setSource(this.getDefaultEvidenceSource());
         }
         if (evidenceEntry.getAlleleOrigin() == null) {
             evidenceEntry.setAlleleOrigin(AlleleOrigin.unknown);
@@ -314,9 +315,8 @@ public class KnownVariant implements Serializable {
         this.setEvidences(evidences);
     }
 
-    public void annotateVariant() throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException {
-        CvaConfiguration cvaConfiguration = CvaConfiguration.load(
-                CvaConfiguration.class.getResourceAsStream("/cva.yml"));
+    public void annotateVariant() throws VariantAnnotatorException, IllegalCvaConfigurationException {
+        CvaConfiguration cvaConfiguration = CvaConfiguration.getInstance();
         ObjectMap options = new ObjectMap();
         options.put("species", cvaConfiguration.getOrganism().getScientificName());
         options.put("assembly", cvaConfiguration.getOrganism().getAssembly());

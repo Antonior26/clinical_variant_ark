@@ -98,10 +98,7 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
             //TODO: manage error
         }
         catch (IllegalCvaConfigurationException e) {
-
-        }
-        catch (IOException e) {
-
+            //TODO: manage error
         }
         return curatedVariant;
     }

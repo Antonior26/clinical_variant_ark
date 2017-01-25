@@ -21,7 +21,7 @@ cellbase:
   preferred: "remote"   ## This accept two values: 'local' and 'remote' to fetch data
 
 storageEngines:
-- id: "mongodb"
+- id: "unrealdb"
   options:
     database.name: "cva"
     collection.knownvariants: "known_variants"

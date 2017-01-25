@@ -1,6 +1,7 @@
 package org.gel.cva.storage.mongodb.knownvariant.converters;
 
 import org.bson.Document;
+import org.gel.cva.storage.core.helpers.CvaDateFormatter;
 import org.gel.models.cva.avro.*;
 import org.gel.models.report.avro.EthnicCategory;
 import org.gel.models.report.avro.ReportedModeOfInheritance;
@@ -19,8 +20,7 @@ import static org.junit.Assert.assertEquals;
 public class DocumentToEvidenceEntryConverterTest {
 
     DocumentToEvidenceEntryConverter evidenceEntryConverter;
-    Date now = new Date();
-    Long date = now.getTime();
+    String date = CvaDateFormatter.getCurrentFormattedDate();
     String submitter = "Mr.Test";
     String sourceName = "RiskDB";
     SourceClass sourceClass = SourceClass.unknown;
@@ -43,11 +43,11 @@ public class DocumentToEvidenceEntryConverterTest {
         this.phenotypes.add(evidencePhenotype);
         this.phenotypes.add(evidencePhenotype2);
         Comment comment = new Comment();
-        comment.setDate(new Long(1234));
+        comment.setDate(CvaDateFormatter.getCurrentFormattedDate());
         comment.setAuthor("author_comment1");
         comment.setText("a very interesting comment");
         Comment comment2 = new Comment();
-        comment2.setDate(new Long(5678));
+        comment2.setDate(CvaDateFormatter.getCurrentFormattedDate());
         comment2.setAuthor("author_comment2");
         comment2.setText("a more interesting comment");
         this.comments.add(comment);
@@ -59,10 +59,12 @@ public class DocumentToEvidenceEntryConverterTest {
         Document document = new Document();
         document.append(DocumentToEvidenceEntryConverter.DATE, this.date);
         document.append(DocumentToEvidenceEntryConverter.SUBMITTER, this.submitter);
-        document.append(DocumentToEvidenceEntryConverter.SOURCE_NAME, this.sourceName);
-        document.append(DocumentToEvidenceEntryConverter.SOURCE_CLASS, this.sourceClass.toString());
-        document.append(DocumentToEvidenceEntryConverter.SOURCE_VERSION, this.sourceVersion);
-        document.append(DocumentToEvidenceEntryConverter.SOURCE_URL, this.sourceUrl);
+        Document source = new Document();
+        source.append(DocumentToEvidenceEntryConverter.SOURCE_NAME, this.sourceName);
+        source.append(DocumentToEvidenceEntryConverter.SOURCE_CLASS, this.sourceClass.toString());
+        source.append(DocumentToEvidenceEntryConverter.SOURCE_VERSION, this.sourceVersion);
+        source.append(DocumentToEvidenceEntryConverter.SOURCE_URL, this.sourceUrl);
+        document.append(DocumentToEvidenceEntryConverter.SOURCE, source);
         document.append(DocumentToEvidenceEntryConverter.ALLELE_ORIGIN, this.alleleOrigin.toString());
         List<Document> phenotypesDocuments = new LinkedList<Document>();
         for (EvidencePhenotype phenotype : this.phenotypes) {
@@ -90,10 +92,10 @@ public class DocumentToEvidenceEntryConverterTest {
         EvidenceEntry evidenceEntry = evidenceEntryConverter.convertToDataModelType(document);
         assertEquals(evidenceEntry.getDate(), this.date);
         assertEquals(evidenceEntry.getSubmitter(), this.submitter);
-        assertEquals(evidenceEntry.getSourceName(), this.sourceName);
-        assertEquals(evidenceEntry.getSourceClass(), this.sourceClass);
-        assertEquals(evidenceEntry.getSourceVersion(), this.sourceVersion);
-        assertEquals(evidenceEntry.getSourceUrl(), this.sourceUrl);
+        assertEquals(evidenceEntry.getSource().getName(), this.sourceName);
+        assertEquals(evidenceEntry.getSource().getClass$(), this.sourceClass);
+        assertEquals(evidenceEntry.getSource().getVersion(), this.sourceVersion);
+        assertEquals(evidenceEntry.getSource().getUrl(), this.sourceUrl);
         assertEquals(evidenceEntry.getAlleleOrigin(), this.alleleOrigin);
         assertEquals(evidenceEntry.getPhenotypes().size(), this.phenotypes.size());
         assertEquals(evidenceEntry.getPubmedId(), this.pubmedId);
@@ -109,10 +111,12 @@ public class DocumentToEvidenceEntryConverterTest {
         EvidenceEntry evidenceEntry = new EvidenceEntry();
         evidenceEntry.setDate(this.date);
         evidenceEntry.setSubmitter(this.submitter);
-        evidenceEntry.setSourceName(this.sourceName);
-        evidenceEntry.setSourceClass(this.sourceClass);
-        evidenceEntry.setSourceVersion(this.sourceVersion);
-        evidenceEntry.setSourceUrl(this.sourceUrl);
+        EvidenceSource evidenceSource = new EvidenceSource();
+        evidenceSource.setName(this.sourceName);
+        evidenceSource.setClass$(this.sourceClass);
+        evidenceSource.setVersion(this.sourceVersion);
+        evidenceSource.setUrl(this.sourceUrl);
+        evidenceEntry.setSource(evidenceSource);
         evidenceEntry.setAlleleOrigin(this.alleleOrigin);
         evidenceEntry.setPhenotypes(this.phenotypes);
         evidenceEntry.setPubmedId(this.pubmedId);
@@ -124,10 +128,18 @@ public class DocumentToEvidenceEntryConverterTest {
         Document document = evidenceEntryConverter.convertToStorageType(evidenceEntry);
         assertEquals(document.get(DocumentToEvidenceEntryConverter.DATE), this.date);
         assertEquals(document.get(DocumentToEvidenceEntryConverter.SUBMITTER), this.submitter);
-        assertEquals(document.get(DocumentToEvidenceEntryConverter.SOURCE_NAME), this.sourceName);
-        assertEquals(document.get(DocumentToEvidenceEntryConverter.SOURCE_CLASS), this.sourceClass.toString());
-        assertEquals(document.get(DocumentToEvidenceEntryConverter.SOURCE_VERSION), this.sourceVersion);
-        assertEquals(document.get(DocumentToEvidenceEntryConverter.SOURCE_URL), this.sourceUrl);
+        assertEquals(
+                ((Document)document.get(DocumentToEvidenceEntryConverter.SOURCE))
+                        .get(DocumentToEvidenceEntryConverter.SOURCE_NAME), this.sourceName);
+        assertEquals(
+                ((Document)document.get(DocumentToEvidenceEntryConverter.SOURCE))
+                        .get(DocumentToEvidenceEntryConverter.SOURCE_CLASS), this.sourceClass.toString());
+        assertEquals(
+                ((Document)document.get(DocumentToEvidenceEntryConverter.SOURCE))
+                        .get(DocumentToEvidenceEntryConverter.SOURCE_VERSION), this.sourceVersion);
+        assertEquals(
+                ((Document)document.get(DocumentToEvidenceEntryConverter.SOURCE))
+                        .get(DocumentToEvidenceEntryConverter.SOURCE_URL), this.sourceUrl);
         assertEquals(document.get(DocumentToEvidenceEntryConverter.ALLELE_ORIGIN), this.alleleOrigin.toString());
         assertEquals(((List)document.get(DocumentToEvidenceEntryConverter.PHENOTYPES)).size(), this.phenotypes.size());
         assertEquals(document.get(DocumentToEvidenceEntryConverter.PUBMED_ID), this.pubmedId);
