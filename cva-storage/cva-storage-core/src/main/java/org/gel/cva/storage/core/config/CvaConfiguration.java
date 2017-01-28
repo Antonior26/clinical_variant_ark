@@ -5,10 +5,13 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaCredentialsException;
 import org.gel.cva.storage.core.helpers.CvaDateFormatter;
+import org.opencb.commons.datastore.core.ObjectMap;
 import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
 import org.opencb.opencga.storage.core.config.CellBaseConfiguration;
 import org.opencb.opencga.storage.core.config.DatabaseCredentials;
 import org.opencb.opencga.storage.core.config.StorageConfiguration;
+import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
+import org.opencb.opencga.storage.core.variant.annotation.annotators.CellBaseDirectVariantAnnotator;
 import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;
 
 import java.io.IOException;
@@ -134,13 +137,22 @@ public class CvaConfiguration {
     }
 
     /**
-     * Returns the StorageConfiguration for CellBase
-     * @return      Cellbase StorageConfiguration
+     * Returns the CellBaseDirectVariantAnnotator
+     * @return      CellBaseDirectVariantAnnotator
+     * @throws IllegalCvaConfigurationException
+     * @throws VariantAnnotatorException
      */
-    public static StorageConfiguration getCellBaseStorageConfiguration() throws IllegalCvaConfigurationException {
+    public static CellBaseDirectVariantAnnotator getCellBaseDirectVariantAnnotator()
+            throws IllegalCvaConfigurationException, VariantAnnotatorException {
+        CvaConfiguration cvaConfiguration = CvaConfiguration.getInstance();
         StorageConfiguration storageConfiguration = new StorageConfiguration();
-        storageConfiguration.setCellbase(CvaConfiguration.getInstance().getCellbase());
-        return storageConfiguration;
+        storageConfiguration.setCellbase(cvaConfiguration.getCellbase());
+        ObjectMap options = new ObjectMap();
+        options.put("species", cvaConfiguration.getOrganism().getScientificName());
+        options.put("assembly", cvaConfiguration.getOrganism().getAssembly());
+        CellBaseDirectVariantAnnotator cellBaseDirectVariantAnnotator = new CellBaseDirectVariantAnnotator(
+                storageConfiguration, options);
+        return cellBaseDirectVariantAnnotator;
     }
 
     /**

@@ -22,12 +22,11 @@ import org.gel.models.cva.avro.Comment;
 import org.gel.models.cva.avro.CurationHistoryEntry;
 import org.gel.models.cva.avro.EvidenceEntry;
 import org.opencb.biodata.models.variant.Variant;
-import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
+import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariant;
 import org.opencb.commons.datastore.core.ComplexTypeConverter;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 import org.opencb.opencga.storage.mongodb.variant.converters.DocumentToVariantConverter;
 
-import java.io.IOException;
 import java.util.*;
 
 /**

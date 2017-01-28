@@ -12,14 +12,12 @@ import org.gel.models.cva.avro.SourceClass;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.models.variant.VariantStudy;
-import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
+import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariant;
 import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
-import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.util.ArrayList;

@@ -4,7 +4,7 @@ import org.gel.cva.storage.core.config.CvaConfiguration;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.junit.Before;
 import org.junit.Test;
-import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
+import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariant;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.models.variant.VariantFactory;
 import org.opencb.biodata.models.variant.VariantVcfFactory;

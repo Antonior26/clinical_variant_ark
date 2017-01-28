@@ -3,7 +3,7 @@ package org.gel.cva.storage.mongodb.knownvariant.converters;
 import org.bson.Document;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.cva.storage.core.helpers.CvaDateFormatter;
-import org.gel.cva.storage.core.knownvariant.dto.KnownVariant;
+import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariant;
 import org.gel.models.cva.avro.*;
 import org.gel.models.report.avro.EthnicCategory;
 import org.gel.models.report.avro.ReportedModeOfInheritance;
@@ -14,7 +14,6 @@ import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorExcept
 import org.opencb.opencga.storage.mongodb.variant.converters.DocumentToVariantConverter;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
