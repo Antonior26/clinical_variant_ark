@@ -14,7 +14,7 @@ public class CvaDateFormatter {
     }
 
     public static String getFormattedDate(LocalDateTime date) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("YYYYMMddHHmm");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("YYYYMMddHHmmss");
         return date.format(formatter);
     }
 }
