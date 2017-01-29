@@ -18,13 +18,11 @@ package org.gel.cva.storage.core.knownvariant.wrappers;
 import org.gel.cva.storage.core.exceptions.IllegalCvaArgumentException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.models.cva.avro.*;
-import org.gel.models.report.avro.EthnicCategory;
 import org.gel.models.report.avro.ReportedModeOfInheritance;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.opencb.biodata.models.variant.*;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 
 import java.util.*;
@@ -46,18 +44,13 @@ public class KnownVariantTest {
 
     }
 
-    @Test
-    public void testKnownVariant1() {
+    private KnownVariant createKnownVariant(
+            String submitter,
+            String chromosome,
+            Integer position,
+            String reference,
+            String alternate) {
 
-        /*
-        Creates a KnownVariant
-         */
-        String submitter = "theSubmitter";
-        String chromosome = "chr19";
-        String chromosomeNormalized = "19";  // OpenCB normalizes chromosome identifiers
-        Integer position = 44908684;
-        String reference = "T";
-        String alternate = "C";
         KnownVariant knownVariant = null;
         try {
             knownVariant = new KnownVariant(
@@ -73,6 +66,52 @@ public class KnownVariantTest {
         catch (VariantAnnotatorException ex) {
             assertTrue(false);  // this should never raise
         }
+        return knownVariant;
+    }
+
+    private void createCuration(
+            KnownVariant knownVariant,
+            String curator,
+            String phenotype,
+            ReportedModeOfInheritance inheritance,
+            CurationClassification curationClassification,
+            ManualCurationConfidence manualCurationConfidence,
+            ConsistencyStatus consistencyStatus) {
+
+        try {
+            knownVariant.addCuration(
+                    curator,
+                    phenotype,
+                    inheritance,
+                    curationClassification,
+                    manualCurationConfidence,
+                    consistencyStatus
+            );
+        }
+        catch (IllegalCvaArgumentException ex) {
+            assertTrue(false);  // this should never raise
+        }
+    }
+
+    @Test
+    public void testKnownVariantWrapper1() {
+
+        /*
+        Creates a KnownVariant
+         */
+        String submitter = "theSubmitter";
+        String chromosome = "chr19";
+        String chromosomeNormalized = "19";  // OpenCB normalizes chromosome identifiers
+        Integer position = 44908684;
+        String reference = "T";
+        String alternate = "C";
+        KnownVariant knownVariant = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
         assertNotEquals(chromosome, knownVariant.getImpl().getVariant().getChromosome());
         assertEquals(chromosomeNormalized, knownVariant.getImpl().getVariant().getChromosome());
         assertEquals(position, knownVariant.getImpl().getVariant().getStart());
@@ -90,19 +129,15 @@ public class KnownVariantTest {
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
         ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
-        try {
-            knownVariant.addCuration(
-                    curator,
-                    phenotype,
-                    inheritance,
-                    CurationClassification.benign_variant,
-                    manualCurationConfidence,
-                    consistencyStatus
-            );
-        }
-        catch (IllegalCvaArgumentException ex) {
-            assertTrue(false);  // this should never raise
-        }
+        this.createCuration(
+                knownVariant,
+                curator,
+                phenotype,
+                inheritance,
+                CurationClassification.benign_variant,
+                manualCurationConfidence,
+                consistencyStatus
+        );
         assertEquals(1, knownVariant.getImpl().getCurations().size());
         List<CurationEntry> curationEntriesEmpty = null;
         try {
@@ -143,19 +178,15 @@ public class KnownVariantTest {
         /*
         Adds a second curation to the same phenotype changing from benign to pathogenic
          */
-        try {
-            knownVariant.addCuration(
-                    curator,
-                    phenotype,
-                    inheritance,
-                    CurationClassification.pathogenic_variant,
-                    manualCurationConfidence,
-                    null
-            );
-        }
-        catch (IllegalCvaArgumentException ex) {
-            assertTrue(false);  // this should never raise
-        }
+        this.createCuration(
+                knownVariant,
+                curator,
+                phenotype,
+                inheritance,
+                CurationClassification.pathogenic_variant,
+                manualCurationConfidence,
+                null
+        );
         assertEquals(1, knownVariant.getImpl().getCurations().size());
         try {
             curationEntries = knownVariant.getCurationEntryByHeritablePhenotype(phenotype, null);
@@ -189,19 +220,15 @@ public class KnownVariantTest {
         Adds a third curation to another phenotype
          */
         String phenotype2 = "HPO:000002";
-        try {
-            knownVariant.addCuration(
-                    curator,
-                    phenotype2,
-                    inheritance,
-                    CurationClassification.established_risk_allele,
-                    manualCurationConfidence,
-                    null
-            );
-        }
-        catch (IllegalCvaArgumentException ex) {
-            assertTrue(false);  // this should never raise
-        }
+        this.createCuration(
+                knownVariant,
+                curator,
+                phenotype2,
+                inheritance,
+                CurationClassification.established_risk_allele,
+                manualCurationConfidence,
+                null
+        );
         assertEquals(2, knownVariant.getImpl().getCurations().size());
         try {
             curationEntries = knownVariant.getCurationEntryByHeritablePhenotype(phenotype2, null);
@@ -397,5 +424,455 @@ public class KnownVariantTest {
                 curationEntries.get(0).getCuration().getConsistencyStatus());
     }
 
+    /**
+     * Test for null curator
+     */
+    @Test(expected = IllegalCvaArgumentException.class)
+    public void testKnownVariantWrapper2() throws IllegalCvaArgumentException {
 
+        String submitter = "theSubmitter";
+        String chromosome = "chr19";
+        Integer position = 44908684;
+        String reference = "T";
+        String alternate = "C";
+        KnownVariant knownVariant = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
+        String curator = null;
+        String phenotype = "HPO:000001";
+        ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
+        ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
+        ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
+        knownVariant.addCuration(
+                curator,
+                phenotype,
+                inheritance,
+                CurationClassification.pathogenic_variant,
+                manualCurationConfidence,
+                consistencyStatus
+        );
+    }
+
+    /**
+     * Test for "" curator
+     */
+    @Test(expected = IllegalCvaArgumentException.class)
+    public void testKnownVariantWrapper3() throws IllegalCvaArgumentException {
+
+        String submitter = "theSubmitter";
+        String chromosome = "chr19";
+        Integer position = 44908684;
+        String reference = "T";
+        String alternate = "C";
+        KnownVariant knownVariant = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
+        String curator = "";
+        String phenotype = "HPO:000001";
+        ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
+        ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
+        ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
+        knownVariant.addCuration(
+                curator,
+                phenotype,
+                inheritance,
+                CurationClassification.pathogenic_variant,
+                manualCurationConfidence,
+                consistencyStatus
+        );
+    }
+
+    /**
+     * Test for null phenotype
+     */
+    @Test(expected = IllegalCvaArgumentException.class)
+    public void testKnownVariantWrapper4() throws IllegalCvaArgumentException {
+
+        String submitter = "theSubmitter";
+        String chromosome = "chr19";
+        Integer position = 44908684;
+        String reference = "T";
+        String alternate = "C";
+        KnownVariant knownVariant = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
+        String curator = "theCurator";
+        String phenotype = null;
+        ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
+        ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
+        ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
+        knownVariant.addCuration(
+                curator,
+                phenotype,
+                inheritance,
+                CurationClassification.pathogenic_variant,
+                manualCurationConfidence,
+                consistencyStatus
+        );
+    }
+
+    /**
+     * Test for "" phenotype
+     */
+    @Test(expected = IllegalCvaArgumentException.class)
+    public void testKnownVariantWrapper5() throws IllegalCvaArgumentException {
+
+        String submitter = "theSubmitter";
+        String chromosome = "chr19";
+        Integer position = 44908684;
+        String reference = "T";
+        String alternate = "C";
+        KnownVariant knownVariant = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
+        String curator = "theCurator";
+        String phenotype = "";
+        ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
+        ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
+        ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
+        knownVariant.addCuration(
+                curator,
+                phenotype,
+                inheritance,
+                CurationClassification.pathogenic_variant,
+                manualCurationConfidence,
+                consistencyStatus
+        );
+    }
+
+    /**
+     * Test for null inheritance mode being set to NA
+     */
+    @Test
+    public void testKnownVariantWrapper6() throws IllegalCvaArgumentException {
+
+        String submitter = "theSubmitter";
+        String chromosome = "chr19";
+        Integer position = 44908684;
+        String reference = "T";
+        String alternate = "C";
+        KnownVariant knownVariant = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
+        String curator = "theCurator";
+        String phenotype = "HP:0000001";
+        ReportedModeOfInheritance inheritance = null;
+        ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
+        ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
+        createCuration(
+                knownVariant,
+                curator,
+                phenotype,
+                inheritance,
+                CurationClassification.pathogenic_variant,
+                manualCurationConfidence,
+                consistencyStatus
+        );
+        List<CurationEntry> curationEntries = null;
+        try {
+            curationEntries = knownVariant.getCurationEntryByHeritablePhenotype(phenotype, inheritance);
+        }
+        catch (IllegalCvaArgumentException ex) {
+            assertTrue(false);
+        }
+        assertEquals(ReportedModeOfInheritance.NA,
+                curationEntries.get(0).getCuration().getHeritablePhenotype().getInheritanceMode());
+    }
+
+    /**
+     * Test for null submitter
+     */
+    @Test(expected = IllegalCvaArgumentException.class)
+    public void testKnownVariantWrapper7() throws IllegalCvaArgumentException {
+
+        String submitter = "theSubmitter";
+        String chromosome = "chr19";
+        Integer position = 44908684;
+        String reference = "T";
+        String alternate = "C";
+        KnownVariant knownVariant = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
+        List<HeritablePhenotype> heritablePhenotypes = new LinkedList<>();
+        HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
+        submitter = null;
+        String phenotype = "HP:0000001";
+        heritablePhenotype.setPhenotype(phenotype);
+        heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
+        heritablePhenotypes.add(heritablePhenotype);
+            knownVariant.addEvidence(
+                    submitter,
+                    null,
+                    SourceType.literature_manual_curation,
+                    null,
+                    null,
+                    null,
+                    AlleleOrigin.germline,
+                    heritablePhenotypes,
+                    EvidencePathogenicity.strong,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "A very bad evidence"
+        );
+    }
+
+    /**
+     * Test for "" submitter
+     */
+    @Test(expected = IllegalCvaArgumentException.class)
+    public void testKnownVariantWrapper8() throws IllegalCvaArgumentException {
+
+        String submitter = "theSubmitter";
+        String chromosome = "chr19";
+        Integer position = 44908684;
+        String reference = "T";
+        String alternate = "C";
+        KnownVariant knownVariant = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
+        List<HeritablePhenotype> heritablePhenotypes = new LinkedList<>();
+        HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
+        submitter = "";
+        String phenotype = "HP:0000001";
+        heritablePhenotype.setPhenotype(phenotype);
+        heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
+        heritablePhenotypes.add(heritablePhenotype);
+        knownVariant.addEvidence(
+                submitter,
+                null,
+                SourceType.literature_manual_curation,
+                null,
+                null,
+                null,
+                AlleleOrigin.germline,
+                heritablePhenotypes,
+                EvidencePathogenicity.strong,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "A very bad evidence"
+        );
+    }
+
+    /**
+     * Test for non null pathogenicity and benignity
+     */
+    @Test(expected = IllegalCvaArgumentException.class)
+    public void testKnownVariantWrapper9() throws IllegalCvaArgumentException {
+
+        String submitter = "theSubmitter";
+        String chromosome = "chr19";
+        Integer position = 44908684;
+        String reference = "T";
+        String alternate = "C";
+        KnownVariant knownVariant = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
+        List<HeritablePhenotype> heritablePhenotypes = new LinkedList<>();
+        HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
+        submitter = "theSubmitter";
+        String phenotype = "HP:0000001";
+        heritablePhenotype.setPhenotype(phenotype);
+        heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
+        heritablePhenotypes.add(heritablePhenotype);
+        knownVariant.addEvidence(
+                submitter,
+                null,
+                SourceType.literature_manual_curation,
+                null,
+                null,
+                null,
+                AlleleOrigin.germline,
+                heritablePhenotypes,
+                EvidencePathogenicity.strong,
+                EvidenceBenignity.strong,
+                null,
+                null,
+                null,
+                null,
+                "A very bad evidence"
+        );
+    }
+
+    /**
+     * Test for both null pathogenicity and benignity
+     */
+    @Test(expected = IllegalCvaArgumentException.class)
+    public void testKnownVariantWrapper10() throws IllegalCvaArgumentException {
+
+        String submitter = "theSubmitter";
+        String chromosome = "chr19";
+        Integer position = 44908684;
+        String reference = "T";
+        String alternate = "C";
+        KnownVariant knownVariant = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
+        List<HeritablePhenotype> heritablePhenotypes = new LinkedList<>();
+        HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
+        submitter = "theSubmitter";
+        String phenotype = "HP:0000001";
+        heritablePhenotype.setPhenotype(phenotype);
+        heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
+        heritablePhenotypes.add(heritablePhenotype);
+        knownVariant.addEvidence(
+                submitter,
+                null,
+                SourceType.literature_manual_curation,
+                null,
+                null,
+                null,
+                AlleleOrigin.germline,
+                heritablePhenotypes,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "A very bad evidence"
+        );
+    }
+
+    /**
+     * Test for null AlleleOrigin being set to `unknown`
+     */
+    @Test
+    public void testKnownVariantWrapper11() {
+
+        String submitter = "theSubmitter";
+        String chromosome = "chr19";
+        Integer position = 44908684;
+        String reference = "T";
+        String alternate = "C";
+        KnownVariant knownVariant = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
+        List<HeritablePhenotype> heritablePhenotypes = new LinkedList<>();
+        HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
+        submitter = "theSubmitter";
+        String phenotype = "HP:0000001";
+        heritablePhenotype.setPhenotype(phenotype);
+        heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
+        heritablePhenotypes.add(heritablePhenotype);
+        try {
+            knownVariant.addEvidence(
+                    submitter,
+                    null,
+                    SourceType.literature_manual_curation,
+                    null,
+                    null,
+                    null,
+                    null,
+                    heritablePhenotypes,
+                    EvidencePathogenicity.moderate,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    "A very bad evidence"
+            );
+        } catch (IllegalCvaArgumentException e) {
+            assertTrue(false);
+        }
+        List<EvidenceEntry> evidenceEntries = null;
+        try {
+            evidenceEntries = knownVariant.getEvidenceEntryByHeritablePhenotype(
+                    phenotype, null);
+        } catch (IllegalCvaArgumentException e) {
+            assertTrue(false);
+        }
+        assertEquals(AlleleOrigin.unknown,
+                evidenceEntries.get(0).getAlleleOrigin());
+    }
+
+    /**
+     * Test for null source type
+     */
+    @Test(expected = IllegalCvaArgumentException.class)
+    public void testKnownVariantWrapper12() throws IllegalCvaArgumentException {
+
+        String submitter = "theSubmitter";
+        String chromosome = "chr19";
+        Integer position = 44908684;
+        String reference = "T";
+        String alternate = "C";
+        KnownVariant knownVariant = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
+        List<HeritablePhenotype> heritablePhenotypes = new LinkedList<>();
+        HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
+        submitter = "theSubmitter";
+        String phenotype = "HP:0000001";
+        heritablePhenotype.setPhenotype(phenotype);
+        heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
+        heritablePhenotypes.add(heritablePhenotype);
+        knownVariant.addEvidence(
+                submitter,
+                null,
+                null,
+                null,
+                null,
+                null,
+                AlleleOrigin.germline,
+                heritablePhenotypes,
+                EvidencePathogenicity.moderate,
+                null,
+                null,
+                null,
+                null,
+                null,
+                "A very bad evidence"
+        );
+    }
 }

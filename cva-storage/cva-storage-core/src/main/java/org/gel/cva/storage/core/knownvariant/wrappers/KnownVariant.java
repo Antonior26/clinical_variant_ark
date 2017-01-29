@@ -71,9 +71,9 @@ public class KnownVariant implements Serializable {
         this.impl = new KnownVariantAvro(
                 submitter,
                 this.variant.getImpl(),
-                new LinkedList<CurationEntry>(),
-                new LinkedList<EvidenceEntry>(),
-                new LinkedList<Comment>()
+                new LinkedList<>(),
+                new LinkedList<>(),
+                new LinkedList<>()
         );
         // annotates the variant
         this.annotateVariant();
@@ -81,13 +81,13 @@ public class KnownVariant implements Serializable {
 
     /**
      * Constructor for KnownVariant
-     * @param submitter
-     * @param chromosome
-     * @param position
-     * @param reference
-     * @param alternate
-     * @throws VariantAnnotatorException
-     * @throws IllegalCvaConfigurationException
+     * @param submitter     the user name for the submitter
+     * @param chromosome    the chromosome identifier, it will be normalized
+     * @param position      the genomic coordinate
+     * @param reference     the reference base/s
+     * @param alternate     the alternate base/s
+     * @throws VariantAnnotatorException            wrong annotation (this excceptions need to be managed...)
+     * @throws IllegalCvaConfigurationException     Wrong CVA settings
      */
     public KnownVariant(String submitter, String chromosome, int position, String reference, String alternate)
             throws VariantAnnotatorException, IllegalCvaConfigurationException{
@@ -112,12 +112,13 @@ public class KnownVariant implements Serializable {
 
     /**
      *
-     * @param curator
-     * @param phenotype
-     * @param modeOfInheritance
-     * @param curationClassification
-     * @param manualCurationConfidence
-     * @param consistencyStatus
+     * @param curator                       the curator's user name
+     * @param phenotype                     the phenotype to which the curation is associated
+     * @param modeOfInheritance             the mode of inheritance
+     * @param curationClassification        the curation classification
+     * @param manualCurationConfidence      the manual curation confidence
+     * @param consistencyStatus             the consistency status of the curation
+     * @throws IllegalCvaArgumentException  wrong parameters in the call
      */
     public void addCuration(String curator,
                             String phenotype,
@@ -148,7 +149,7 @@ public class KnownVariant implements Serializable {
                     newCuration,
                     curator,
                     Collections.emptyList());
-            List curationHistory = new LinkedList<CurationHistoryEntry>();
+            List<CurationHistoryEntry> curationHistory = new LinkedList<>();
             curationHistory.add(curationHistoryEntry);
             curationEntry = new CurationEntry(newCuration, curationHistory);
         }
@@ -190,7 +191,7 @@ public class KnownVariant implements Serializable {
      * @param numberOfIndividuals       the number of individuals
      * @param ethnicCategory            the ethnic category of assessed individuals
      * @param description               the evidence description
-     * @throws IllegalCvaArgumentException
+     * @throws IllegalCvaArgumentException      wrong parameters in the call
      */
     public void addEvidence(String submitter,
                             String sourceName,
@@ -255,7 +256,7 @@ public class KnownVariant implements Serializable {
             throws IllegalCvaArgumentException {
 
         return this.getCurationEntryByHeritablePhenotypes(phenotype,
-                modeOfInheritance != null? Arrays.asList(modeOfInheritance) : null);
+                modeOfInheritance != null? Collections.singletonList(modeOfInheritance) : null);
     }
 
     /**
@@ -311,7 +312,7 @@ public class KnownVariant implements Serializable {
             throws IllegalCvaArgumentException {
 
         return this.getEvidenceEntryByHeritablePhenotypes(phenotype,
-                modeOfInheritance != null? Arrays.asList(modeOfInheritance) : null);
+                modeOfInheritance != null? Collections.singletonList(modeOfInheritance) : null);
     }
 
     /**
@@ -364,7 +365,7 @@ public class KnownVariant implements Serializable {
      * @param curation      the curation data to be checked
      * @param curator       the curator to be checked
      * @return              the curation object after checking
-     * @throws IllegalCvaArgumentException
+     * @throws IllegalCvaArgumentException      wrong parameters to call
      */
     private Curation curationSanityChecks(Curation curation, String curator)
             throws IllegalCvaArgumentException {
@@ -421,7 +422,7 @@ public class KnownVariant implements Serializable {
     /**
      * Performs sanity checks on an EvidenceSource
      * @param evidenceSource    the evidence source
-     * @throws IllegalCvaArgumentException
+     * @throws IllegalCvaArgumentException      wrong parameters to call
      */
     private void sourceSanityChecks(EvidenceSource evidenceSource)
             throws IllegalCvaArgumentException {
@@ -456,7 +457,7 @@ public class KnownVariant implements Serializable {
      * Compares two HeritablePhenotypes
      * @param heritablePhenotype1   the HeritablePhenotype1
      * @param heritablePhenotype2   the HeritablePhenotype2
-     * @return
+     * @return      are these heritable pehnotypes equals
      */
     private Boolean areEqualHeritablePhenotypes(HeritablePhenotype heritablePhenotype1,
                                                 HeritablePhenotype heritablePhenotype2) {
@@ -548,15 +549,15 @@ public class KnownVariant implements Serializable {
 
     /**
      * Annotates this variant with CellBase
-     * @throws VariantAnnotatorException
-     * @throws IllegalCvaConfigurationException
+     * @throws VariantAnnotatorException            error in variant annotation...
+     * @throws IllegalCvaConfigurationException     wrong CVA settings
      */
     private void annotateVariant() throws VariantAnnotatorException, IllegalCvaConfigurationException {
         CellBaseDirectVariantAnnotator cellBaseDirectVariantAnnotator =
                 CvaConfiguration.getCellBaseDirectVariantAnnotator();
         List<VariantAnnotation> variantAnnotations = null;
         try {
-            variantAnnotations = cellBaseDirectVariantAnnotator.annotate(Arrays.asList(this.getVariant()));
+            variantAnnotations = cellBaseDirectVariantAnnotator.annotate(Collections.singletonList(this.getVariant()));
         }
         catch (Exception e) {
             //TODO: manage these errors, write a file with conflicting variants???
