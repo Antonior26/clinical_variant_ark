@@ -39,7 +39,7 @@ import java.util.*;
  * @author Pablo Riesgo Ferreiro &lt;pablo.ferreiro@genomicsengland.co.uk&gt;
  */
 @JsonIgnoreProperties({"impl", "variant"})
-public class KnownVariantWrapper implements Serializable {
+public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
 
     private KnownVariant impl;
     private Variant variant;
