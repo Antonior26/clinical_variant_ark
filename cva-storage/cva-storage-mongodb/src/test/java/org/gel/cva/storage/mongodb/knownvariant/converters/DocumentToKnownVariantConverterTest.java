@@ -3,7 +3,7 @@ package org.gel.cva.storage.mongodb.knownvariant.converters;
 import org.bson.Document;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.cva.storage.core.helpers.CvaDateFormatter;
-import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariant;
+import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariantWrapper;
 import org.gel.models.cva.avro.*;
 import org.gel.models.report.avro.EthnicCategory;
 import org.gel.models.report.avro.ReportedModeOfInheritance;
@@ -93,9 +93,9 @@ public class DocumentToKnownVariantConverterTest {
         Variant variant = new Variant("1", 12345, "A", "C");
         Document variantDocument = this.variantConverter.convertToStorageType(variant);
         document.append("variant", variantDocument);
-        KnownVariant knownVariant = knownVariantConverter.convertToDataModelType(document);
-        assertEquals(knownVariant.getCurationClassification(), this.curationClassification.toString());
-        assertEquals(knownVariant.getCurationScore(), this.curationScore);
+        KnownVariantWrapper knownVariantWrapper = knownVariantConverter.convertToDataModelType(document);
+        assertEquals(knownVariantWrapper.getCurationClassification(), this.curationClassification.toString());
+        assertEquals(knownVariantWrapper.getCurationScore(), this.curationScore);
         //TODO: check other fields
     }
 
@@ -103,10 +103,10 @@ public class DocumentToKnownVariantConverterTest {
     public void convertToStorageTypeTest()
             throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException{
         Variant variant = new Variant("1", 12345, "A", "C");
-        KnownVariant knownVariant = new KnownVariant(variant);
-        knownVariant.setCurationClassification(this.curationClassification.toString());
-        knownVariant.setCurationScore(this.curationScore);
-        Document document = knownVariantConverter.convertToStorageType(knownVariant);
+        KnownVariantWrapper knownVariantWrapper = new KnownVariantWrapper(variant);
+        knownVariantWrapper.setCurationClassification(this.curationClassification.toString());
+        knownVariantWrapper.setCurationScore(this.curationScore);
+        Document document = knownVariantConverter.convertToStorageType(knownVariantWrapper);
         assertEquals(document.get("classification"), this.curationClassification.toString());
         assertEquals(document.get("curationScore"), this.curationScore);
         //TODO: check other fields

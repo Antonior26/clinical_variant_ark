@@ -1,6 +1,6 @@
 package org.gel.cva.storage.core.knownvariant.adaptors;
 
-import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariant;
+import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariantWrapper;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 
@@ -19,7 +19,7 @@ public interface KnownVariantDBAdaptor extends AutoCloseable {
      * @param options   Query modifiers, accepted values are: include, exclude, limit, skip, sort and count
      * @return A QueryResult with the number of inserted variants
      */
-    QueryResult insert(KnownVariant curatedVariant, QueryOptions options);
+    QueryResult insert(KnownVariantWrapper curatedVariant, QueryOptions options);
 
     /**
      * This method inserts CuratedVariants in the database. If the variant already exists... throw error?
@@ -28,6 +28,6 @@ public interface KnownVariantDBAdaptor extends AutoCloseable {
      * @param options   Query modifiers, accepted values are: include, exclude, limit, skip, sort and count
      * @return A QueryResult with the number of inserted variants
      */
-    QueryResult insert(List<KnownVariant> curatedVariants, QueryOptions options);
+    QueryResult insert(List<KnownVariantWrapper> curatedVariants, QueryOptions options);
 
 }

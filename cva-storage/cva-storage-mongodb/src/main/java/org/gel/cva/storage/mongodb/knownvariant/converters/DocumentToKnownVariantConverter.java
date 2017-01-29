@@ -18,11 +18,11 @@ package org.gel.cva.storage.mongodb.knownvariant.converters;
 
 import org.bson.Document;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
+import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariantWrapper;
 import org.gel.models.cva.avro.Comment;
 import org.gel.models.cva.avro.CurationHistoryEntry;
 import org.gel.models.cva.avro.EvidenceEntry;
 import org.opencb.biodata.models.variant.Variant;
-import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariant;
 import org.opencb.commons.datastore.core.ComplexTypeConverter;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 import org.opencb.opencga.storage.mongodb.variant.converters.DocumentToVariantConverter;
@@ -32,7 +32,7 @@ import java.util.*;
 /**
  * @author Pablo Riesgo Ferreiro <pablo.ferreiro@genomicsengland.co.uk>
  */
-public class DocumentToKnownVariantConverter implements ComplexTypeConverter<KnownVariant, Document> {
+public class DocumentToKnownVariantConverter implements ComplexTypeConverter<KnownVariantWrapper, Document> {
 
     public static final String VARIANT = "variant";
     public static final String CLASSIFICATION = "classification";
@@ -46,7 +46,7 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
     private final DocumentToCommentConverter commentConverter;
 
     /**
-     * Create a converter between {@link KnownVariant} and {@link Document} entities.
+     * Create a converter between {@link KnownVariantWrapper} and {@link Document} entities.
      *
      */
     public DocumentToKnownVariantConverter() {
@@ -56,7 +56,7 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
     }
 
     @Override
-    public KnownVariant convertToDataModelType(Document object) {
+    public KnownVariantWrapper convertToDataModelType(Document object) {
         //TODO: should we inherit the variant id in the CuratedVariant????
         Document variantDocument = (Document) object.get(VARIANT);
         String classification = (String) object.get(CLASSIFICATION);
@@ -88,9 +88,9 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
             }
         }
         //TODO: create converters and convert history
-        KnownVariant curatedVariant = null;
+        KnownVariantWrapper curatedVariant = null;
         try {
-            curatedVariant = new KnownVariant(
+            curatedVariant = new KnownVariantWrapper(
                     variant, classification, score, curationHistory, evidences, comments);
         }
         catch (VariantAnnotatorException e) {
@@ -103,7 +103,7 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
     }
 
     @Override
-    public Document convertToStorageType(KnownVariant curatedVariant) {
+    public Document convertToStorageType(KnownVariantWrapper curatedVariant) {
 
         Variant variant = curatedVariant.getVariant();
         Document mongoVariant;

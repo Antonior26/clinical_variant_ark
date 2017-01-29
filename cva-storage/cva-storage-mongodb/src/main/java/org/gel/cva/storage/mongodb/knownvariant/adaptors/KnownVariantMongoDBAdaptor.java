@@ -22,7 +22,7 @@ import org.gel.cva.storage.core.config.CvaConfiguration;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaCredentialsException;
 import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToKnownVariantConverter;
-import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariant;
+import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariantWrapper;
 import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.commons.datastore.mongodb.MongoDBCollection;
@@ -72,7 +72,7 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
     }
 
     @Override
-    public QueryResult insert(KnownVariant curatedVariant, QueryOptions options) {
+    public QueryResult insert(KnownVariantWrapper curatedVariant, QueryOptions options) {
         // Creates a set of converters
         DocumentToKnownVariantConverter curatedVariantConverter = new DocumentToKnownVariantConverter();
         Document curatedVariantDocument = curatedVariantConverter.convertToStorageType(curatedVariant);
@@ -82,7 +82,7 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
     }
 
     @Override
-    public QueryResult insert(List<KnownVariant> curatedVariants, QueryOptions options) {
+    public QueryResult insert(List<KnownVariantWrapper> curatedVariants, QueryOptions options) {
         //TODO: implement the insertion in batches of variants
         throw new NotImplementedException();
     }

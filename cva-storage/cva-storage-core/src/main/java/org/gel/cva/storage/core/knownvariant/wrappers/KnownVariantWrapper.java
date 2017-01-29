@@ -39,9 +39,9 @@ import java.util.*;
  * @author Pablo Riesgo Ferreiro &lt;pablo.ferreiro@genomicsengland.co.uk&gt;
  */
 @JsonIgnoreProperties({"impl", "variant"})
-public class KnownVariant implements Serializable {
+public class KnownVariantWrapper implements Serializable {
 
-    private KnownVariantAvro impl;
+    private KnownVariant impl;
     private Variant variant;
 
     /**
@@ -50,7 +50,7 @@ public class KnownVariant implements Serializable {
      */
     //TODO: do we need this for reading the DB???
     /*
-    public KnownVariant(KnownVariantAvro avro) {
+    public KnownVariantWrapper(KnownVariantAvro avro) {
         Objects.requireNonNull(avro);
         this.variant = new Variant(avro.getVariant());
         this.impl = avro;
@@ -58,17 +58,17 @@ public class KnownVariant implements Serializable {
     */
 
     /**
-     * Constructor for KnownVariant
+     * Constructor for KnownVariantWrapper
      * @param submitter         the submitter of the variant
      * @param variant           the Variant wrapper
      */
-    public KnownVariant(String submitter,
-                        Variant variant)
+    public KnownVariantWrapper(String submitter,
+                               Variant variant)
             throws VariantAnnotatorException, IllegalCvaConfigurationException{
         // stores a reference to the OpenCB variant
         this.variant = variant;
         // creates the underlying KnownVariantAvro model with default values
-        this.impl = new KnownVariantAvro(
+        this.impl = new KnownVariant(
                 submitter,
                 this.variant.getImpl(),
                 new LinkedList<>(),
@@ -80,7 +80,7 @@ public class KnownVariant implements Serializable {
     }
 
     /**
-     * Constructor for KnownVariant
+     * Constructor for KnownVariantWrapper
      * @param submitter     the user name for the submitter
      * @param chromosome    the chromosome identifier, it will be normalized
      * @param position      the genomic coordinate
@@ -89,7 +89,7 @@ public class KnownVariant implements Serializable {
      * @throws VariantAnnotatorException            wrong annotation (this excceptions need to be managed...)
      * @throws IllegalCvaConfigurationException     Wrong CVA settings
      */
-    public KnownVariant(String submitter, String chromosome, int position, String reference, String alternate)
+    public KnownVariantWrapper(String submitter, String chromosome, int position, String reference, String alternate)
             throws VariantAnnotatorException, IllegalCvaConfigurationException{
         this(submitter, new Variant(chromosome, position, reference, alternate));
     }
@@ -104,9 +104,9 @@ public class KnownVariant implements Serializable {
 
     /**
      * Getter for CuratedVariantAvro, no setter available as it should be passed in the constructor
-     * @return  the Avro serialized KnownVariant
+     * @return  the Avro serialized KnownVariantWrapper
      */
-    public KnownVariantAvro getImpl() {
+    public KnownVariant getImpl() {
         return impl;
     }
 

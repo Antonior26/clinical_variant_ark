@@ -12,7 +12,7 @@ import org.gel.models.cva.avro.SourceClass;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.models.variant.VariantStudy;
-import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariant;
+import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariantWrapper;
 import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 
@@ -157,7 +157,7 @@ public class ClinVarLoader {
                 List<EvidenceEntry> evidences = new ArrayList<EvidenceEntry>();
                 evidences.add(evidenceEntry);
                 // Creates a curated variant
-                KnownVariant knownVariant = new KnownVariant(
+                KnownVariantWrapper knownVariantWrapper = new KnownVariantWrapper(
                         variant,
                         getCurationClassificationFromClinicalsignificance(clinicalSignificance),
                         getCurationScoreFromRevisionStatus(clinicalRevisionStatus),
@@ -167,7 +167,7 @@ public class ClinVarLoader {
                         );
                 // Inserts in Mongo
                 try {
-                    knownVariantMongoDBAdaptor.insert(knownVariant, null);
+                    knownVariantMongoDBAdaptor.insert(knownVariantWrapper, null);
                 }
                 catch (MongoWriteException e) {
                     duplicatedVariants ++;

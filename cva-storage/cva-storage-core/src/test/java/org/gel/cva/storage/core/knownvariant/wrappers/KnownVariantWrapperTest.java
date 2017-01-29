@@ -32,9 +32,9 @@ import static org.junit.Assert.*;
 /**
  * @author Pablo Riesgo Ferreiro &lt;pablo.ferreiro@genomicsengland.co.uk&gt;
  */
-public class KnownVariantTest {
+public class KnownVariantWrapperTest {
 
-    public KnownVariantTest(){}
+    public KnownVariantWrapperTest(){}
 
     @Rule
     public ExpectedException thrown = ExpectedException.none();
@@ -44,16 +44,16 @@ public class KnownVariantTest {
 
     }
 
-    private KnownVariant createKnownVariant(
+    private KnownVariantWrapper createKnownVariant(
             String submitter,
             String chromosome,
             Integer position,
             String reference,
             String alternate) {
 
-        KnownVariant knownVariant = null;
+        KnownVariantWrapper knownVariantWrapper = null;
         try {
-            knownVariant = new KnownVariant(
+            knownVariantWrapper = new KnownVariantWrapper(
                     submitter,
                     chromosome,
                     position,
@@ -66,11 +66,11 @@ public class KnownVariantTest {
         catch (VariantAnnotatorException ex) {
             assertTrue(false);  // this should never raise
         }
-        return knownVariant;
+        return knownVariantWrapper;
     }
 
     private void createCuration(
-            KnownVariant knownVariant,
+            KnownVariantWrapper knownVariantWrapper,
             String curator,
             String phenotype,
             ReportedModeOfInheritance inheritance,
@@ -79,7 +79,7 @@ public class KnownVariantTest {
             ConsistencyStatus consistencyStatus) {
 
         try {
-            knownVariant.addCuration(
+            knownVariantWrapper.addCuration(
                     curator,
                     phenotype,
                     inheritance,
@@ -97,7 +97,7 @@ public class KnownVariantTest {
     public void testKnownVariantWrapper1() {
 
         /*
-        Creates a KnownVariant
+        Creates a KnownVariantWrapper
          */
         String submitter = "theSubmitter";
         String chromosome = "chr19";
@@ -105,21 +105,21 @@ public class KnownVariantTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariant knownVariant = this.createKnownVariant(
+        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
-        assertNotEquals(chromosome, knownVariant.getImpl().getVariant().getChromosome());
-        assertEquals(chromosomeNormalized, knownVariant.getImpl().getVariant().getChromosome());
-        assertEquals(position, knownVariant.getImpl().getVariant().getStart());
-        assertEquals(reference, knownVariant.getImpl().getVariant().getReference());
-        assertEquals(alternate, knownVariant.getImpl().getVariant().getAlternate());
-        assertNotNull(knownVariant.getImpl().getVariant().getAnnotation());
-        assertEquals(0, knownVariant.getImpl().getCurations().size());
-        assertEquals(0, knownVariant.getImpl().getEvidences().size());
+        assertNotEquals(chromosome, knownVariantWrapper.getImpl().getVariant().getChromosome());
+        assertEquals(chromosomeNormalized, knownVariantWrapper.getImpl().getVariant().getChromosome());
+        assertEquals(position, knownVariantWrapper.getImpl().getVariant().getStart());
+        assertEquals(reference, knownVariantWrapper.getImpl().getVariant().getReference());
+        assertEquals(alternate, knownVariantWrapper.getImpl().getVariant().getAlternate());
+        assertNotNull(knownVariantWrapper.getImpl().getVariant().getAnnotation());
+        assertEquals(0, knownVariantWrapper.getImpl().getCurations().size());
+        assertEquals(0, knownVariantWrapper.getImpl().getEvidences().size());
 
         /*
         Adds a curation to the variant
@@ -130,7 +130,7 @@ public class KnownVariantTest {
         ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
         this.createCuration(
-                knownVariant,
+                knownVariantWrapper,
                 curator,
                 phenotype,
                 inheritance,
@@ -138,23 +138,23 @@ public class KnownVariantTest {
                 manualCurationConfidence,
                 consistencyStatus
         );
-        assertEquals(1, knownVariant.getImpl().getCurations().size());
+        assertEquals(1, knownVariantWrapper.getImpl().getCurations().size());
         List<CurationEntry> curationEntriesEmpty = null;
         try {
-            curationEntriesEmpty = knownVariant.getCurationEntryByHeritablePhenotype(phenotype, ReportedModeOfInheritance.biallelic);
+            curationEntriesEmpty = knownVariantWrapper.getCurationEntryByHeritablePhenotype(phenotype, ReportedModeOfInheritance.biallelic);
         } catch (IllegalCvaArgumentException e) {
             assertTrue(false);
         }
         assertEquals(0, curationEntriesEmpty.size());
         List<CurationEntry> curationEntries = null;
         try {
-            curationEntries = knownVariant.getCurationEntryByHeritablePhenotype(phenotype, inheritance);
+            curationEntries = knownVariantWrapper.getCurationEntryByHeritablePhenotype(phenotype, inheritance);
         } catch (IllegalCvaArgumentException e) {
             assertTrue(false);
         }
         assertEquals(1, curationEntries.size());
         try {
-            curationEntries = knownVariant.getCurationEntryByHeritablePhenotype(phenotype, null);
+            curationEntries = knownVariantWrapper.getCurationEntryByHeritablePhenotype(phenotype, null);
         } catch (IllegalCvaArgumentException e) {
             assertTrue(false);
         }
@@ -179,7 +179,7 @@ public class KnownVariantTest {
         Adds a second curation to the same phenotype changing from benign to pathogenic
          */
         this.createCuration(
-                knownVariant,
+                knownVariantWrapper,
                 curator,
                 phenotype,
                 inheritance,
@@ -187,9 +187,9 @@ public class KnownVariantTest {
                 manualCurationConfidence,
                 null
         );
-        assertEquals(1, knownVariant.getImpl().getCurations().size());
+        assertEquals(1, knownVariantWrapper.getImpl().getCurations().size());
         try {
-            curationEntries = knownVariant.getCurationEntryByHeritablePhenotype(phenotype, null);
+            curationEntries = knownVariantWrapper.getCurationEntryByHeritablePhenotype(phenotype, null);
         } catch (IllegalCvaArgumentException e) {
             assertTrue(false);
         }
@@ -221,7 +221,7 @@ public class KnownVariantTest {
          */
         String phenotype2 = "HPO:000002";
         this.createCuration(
-                knownVariant,
+                knownVariantWrapper,
                 curator,
                 phenotype2,
                 inheritance,
@@ -229,9 +229,9 @@ public class KnownVariantTest {
                 manualCurationConfidence,
                 null
         );
-        assertEquals(2, knownVariant.getImpl().getCurations().size());
+        assertEquals(2, knownVariantWrapper.getImpl().getCurations().size());
         try {
-            curationEntries = knownVariant.getCurationEntryByHeritablePhenotype(phenotype2, null);
+            curationEntries = knownVariantWrapper.getCurationEntryByHeritablePhenotype(phenotype2, null);
         } catch (IllegalCvaArgumentException e) {
             assertTrue(false);
         }
@@ -267,7 +267,7 @@ public class KnownVariantTest {
         heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
         heritablePhenotypes.add(heritablePhenotype);
         try {
-            knownVariant.addEvidence(
+            knownVariantWrapper.addEvidence(
                     submitter,
                     null,
                     SourceType.literature_manual_curation,
@@ -288,11 +288,11 @@ public class KnownVariantTest {
         catch (IllegalCvaArgumentException ex) {
             assertTrue(false);
         }
-        assertEquals(1, knownVariant.getImpl().getEvidences().size());
+        assertEquals(1, knownVariantWrapper.getImpl().getEvidences().size());
         List<EvidenceEntry> evidenceEntriesEmpty =
                 null;
         try {
-            evidenceEntriesEmpty = knownVariant.getEvidenceEntryByHeritablePhenotype(
+            evidenceEntriesEmpty = knownVariantWrapper.getEvidenceEntryByHeritablePhenotype(
                     phenotype, ReportedModeOfInheritance.biallelic);
         } catch (IllegalCvaArgumentException e) {
             assertTrue(false);
@@ -300,14 +300,14 @@ public class KnownVariantTest {
         assertEquals(0, evidenceEntriesEmpty.size());
         List<EvidenceEntry> evidenceEntries = null;
         try {
-            evidenceEntries = knownVariant.getEvidenceEntryByHeritablePhenotype(
+            evidenceEntries = knownVariantWrapper.getEvidenceEntryByHeritablePhenotype(
                     phenotype, ReportedModeOfInheritance.monoallelic_maternally_imprinted);
         } catch (IllegalCvaArgumentException e) {
             assertTrue(false);
         }
         assertEquals(1, evidenceEntries.size());
         try {
-            evidenceEntries = knownVariant.getEvidenceEntryByHeritablePhenotype(phenotype, null);
+            evidenceEntries = knownVariantWrapper.getEvidenceEntryByHeritablePhenotype(phenotype, null);
         } catch (IllegalCvaArgumentException e) {
             assertTrue(false);
         }
@@ -327,7 +327,7 @@ public class KnownVariantTest {
         assertEquals(EvidencePathogenicity.strong,
                 evidenceEntry.getPathogenicity());
         try {
-            curationEntries = knownVariant.getCurationEntryByHeritablePhenotype(phenotype, null);
+            curationEntries = knownVariantWrapper.getCurationEntryByHeritablePhenotype(phenotype, null);
         } catch (IllegalCvaArgumentException e) {
             assertTrue(false);
         }
@@ -343,7 +343,7 @@ public class KnownVariantTest {
         heritablePhenotypes2.add(heritablePhenotype);
         heritablePhenotypes2.add(heritablePhenotype2);
         try {
-            knownVariant.addEvidence(
+            knownVariantWrapper.addEvidence(
                     submitter,
                     null,
                     SourceType.literature_manual_curation,
@@ -364,23 +364,23 @@ public class KnownVariantTest {
         catch (IllegalCvaArgumentException ex) {
             assertTrue(false);
         }
-        assertEquals(2, knownVariant.getImpl().getEvidences().size());
+        assertEquals(2, knownVariantWrapper.getImpl().getEvidences().size());
         try {
             evidenceEntriesEmpty =
-                    knownVariant.getEvidenceEntryByHeritablePhenotype(phenotype, ReportedModeOfInheritance.biallelic);
+                    knownVariantWrapper.getEvidenceEntryByHeritablePhenotype(phenotype, ReportedModeOfInheritance.biallelic);
         } catch (IllegalCvaArgumentException e) {
             assertTrue(false);
         }
         assertEquals(0, evidenceEntriesEmpty.size());
         try {
-            evidenceEntries = knownVariant.getEvidenceEntryByHeritablePhenotype(
+            evidenceEntries = knownVariantWrapper.getEvidenceEntryByHeritablePhenotype(
                     phenotype, ReportedModeOfInheritance.monoallelic_maternally_imprinted);
         } catch (IllegalCvaArgumentException e) {
             assertTrue(false);
         }
         assertEquals(2, evidenceEntries.size());
         try {
-            evidenceEntries = knownVariant.getEvidenceEntryByHeritablePhenotype(phenotype, null);
+            evidenceEntries = knownVariantWrapper.getEvidenceEntryByHeritablePhenotype(phenotype, null);
         } catch (IllegalCvaArgumentException e) {
             assertTrue(false);
         }
@@ -388,7 +388,7 @@ public class KnownVariantTest {
         evidenceEntry = evidenceEntries.get(0);
         List<EvidenceEntry> evidenceEntries2 = null;
         try {
-            evidenceEntries2 = knownVariant.getEvidenceEntryByHeritablePhenotype(
+            evidenceEntries2 = knownVariantWrapper.getEvidenceEntryByHeritablePhenotype(
                     phenotype2, null);
         } catch (IllegalCvaArgumentException e) {
             assertTrue(false);
@@ -416,7 +416,7 @@ public class KnownVariantTest {
                 evidenceEntry2.getBenignity());
         // curation is now in conflict as there are two conflicting evidences
         try {
-            curationEntries = knownVariant.getCurationEntryByHeritablePhenotype(phenotype, null);
+            curationEntries = knownVariantWrapper.getCurationEntryByHeritablePhenotype(phenotype, null);
         } catch (IllegalCvaArgumentException e) {
             assertTrue(false);
         }
@@ -435,7 +435,7 @@ public class KnownVariantTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariant knownVariant = this.createKnownVariant(
+        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
@@ -447,7 +447,7 @@ public class KnownVariantTest {
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
         ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
-        knownVariant.addCuration(
+        knownVariantWrapper.addCuration(
                 curator,
                 phenotype,
                 inheritance,
@@ -468,7 +468,7 @@ public class KnownVariantTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariant knownVariant = this.createKnownVariant(
+        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
@@ -480,7 +480,7 @@ public class KnownVariantTest {
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
         ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
-        knownVariant.addCuration(
+        knownVariantWrapper.addCuration(
                 curator,
                 phenotype,
                 inheritance,
@@ -501,7 +501,7 @@ public class KnownVariantTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariant knownVariant = this.createKnownVariant(
+        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
@@ -513,7 +513,7 @@ public class KnownVariantTest {
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
         ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
-        knownVariant.addCuration(
+        knownVariantWrapper.addCuration(
                 curator,
                 phenotype,
                 inheritance,
@@ -534,7 +534,7 @@ public class KnownVariantTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariant knownVariant = this.createKnownVariant(
+        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
@@ -546,7 +546,7 @@ public class KnownVariantTest {
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
         ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
-        knownVariant.addCuration(
+        knownVariantWrapper.addCuration(
                 curator,
                 phenotype,
                 inheritance,
@@ -567,7 +567,7 @@ public class KnownVariantTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariant knownVariant = this.createKnownVariant(
+        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
@@ -580,7 +580,7 @@ public class KnownVariantTest {
         ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
         createCuration(
-                knownVariant,
+                knownVariantWrapper,
                 curator,
                 phenotype,
                 inheritance,
@@ -590,7 +590,7 @@ public class KnownVariantTest {
         );
         List<CurationEntry> curationEntries = null;
         try {
-            curationEntries = knownVariant.getCurationEntryByHeritablePhenotype(phenotype, inheritance);
+            curationEntries = knownVariantWrapper.getCurationEntryByHeritablePhenotype(phenotype, inheritance);
         }
         catch (IllegalCvaArgumentException ex) {
             assertTrue(false);
@@ -610,7 +610,7 @@ public class KnownVariantTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariant knownVariant = this.createKnownVariant(
+        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
@@ -624,7 +624,7 @@ public class KnownVariantTest {
         heritablePhenotype.setPhenotype(phenotype);
         heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
         heritablePhenotypes.add(heritablePhenotype);
-            knownVariant.addEvidence(
+            knownVariantWrapper.addEvidence(
                     submitter,
                     null,
                     SourceType.literature_manual_curation,
@@ -654,7 +654,7 @@ public class KnownVariantTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariant knownVariant = this.createKnownVariant(
+        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
@@ -668,7 +668,7 @@ public class KnownVariantTest {
         heritablePhenotype.setPhenotype(phenotype);
         heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
         heritablePhenotypes.add(heritablePhenotype);
-        knownVariant.addEvidence(
+        knownVariantWrapper.addEvidence(
                 submitter,
                 null,
                 SourceType.literature_manual_curation,
@@ -698,7 +698,7 @@ public class KnownVariantTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariant knownVariant = this.createKnownVariant(
+        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
@@ -712,7 +712,7 @@ public class KnownVariantTest {
         heritablePhenotype.setPhenotype(phenotype);
         heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
         heritablePhenotypes.add(heritablePhenotype);
-        knownVariant.addEvidence(
+        knownVariantWrapper.addEvidence(
                 submitter,
                 null,
                 SourceType.literature_manual_curation,
@@ -742,7 +742,7 @@ public class KnownVariantTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariant knownVariant = this.createKnownVariant(
+        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
@@ -756,7 +756,7 @@ public class KnownVariantTest {
         heritablePhenotype.setPhenotype(phenotype);
         heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
         heritablePhenotypes.add(heritablePhenotype);
-        knownVariant.addEvidence(
+        knownVariantWrapper.addEvidence(
                 submitter,
                 null,
                 SourceType.literature_manual_curation,
@@ -786,7 +786,7 @@ public class KnownVariantTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariant knownVariant = this.createKnownVariant(
+        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
@@ -801,7 +801,7 @@ public class KnownVariantTest {
         heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
         heritablePhenotypes.add(heritablePhenotype);
         try {
-            knownVariant.addEvidence(
+            knownVariantWrapper.addEvidence(
                     submitter,
                     null,
                     SourceType.literature_manual_curation,
@@ -823,7 +823,7 @@ public class KnownVariantTest {
         }
         List<EvidenceEntry> evidenceEntries = null;
         try {
-            evidenceEntries = knownVariant.getEvidenceEntryByHeritablePhenotype(
+            evidenceEntries = knownVariantWrapper.getEvidenceEntryByHeritablePhenotype(
                     phenotype, null);
         } catch (IllegalCvaArgumentException e) {
             assertTrue(false);
@@ -843,7 +843,7 @@ public class KnownVariantTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariant knownVariant = this.createKnownVariant(
+        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
@@ -857,7 +857,7 @@ public class KnownVariantTest {
         heritablePhenotype.setPhenotype(phenotype);
         heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
         heritablePhenotypes.add(heritablePhenotype);
-        knownVariant.addEvidence(
+        knownVariantWrapper.addEvidence(
                 submitter,
                 null,
                 null,

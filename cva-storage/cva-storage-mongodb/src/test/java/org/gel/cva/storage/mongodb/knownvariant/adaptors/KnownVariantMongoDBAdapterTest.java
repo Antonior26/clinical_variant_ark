@@ -2,9 +2,9 @@ package org.gel.cva.storage.mongodb.knownvariant.adaptors;
 
 import org.gel.cva.storage.core.config.CvaConfiguration;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
+import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariantWrapper;
 import org.junit.Before;
 import org.junit.Test;
-import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariant;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.models.variant.VariantFactory;
 import org.opencb.biodata.models.variant.VariantVcfFactory;
@@ -51,8 +51,8 @@ public class KnownVariantMongoDBAdapterTest {
         result.stream().forEach(variant -> variant.setStudies(Collections.<StudyEntry>emptyList()));
 
         Variant variant = result.get(0);
-        KnownVariant knownVariant = new KnownVariant(variant);
-        this.curatedVariantMongoDBAdaptor.insert(knownVariant, null);
+        KnownVariantWrapper knownVariantWrapper = new KnownVariantWrapper(variant);
+        this.curatedVariantMongoDBAdaptor.insert(knownVariantWrapper, null);
     }
 
 }

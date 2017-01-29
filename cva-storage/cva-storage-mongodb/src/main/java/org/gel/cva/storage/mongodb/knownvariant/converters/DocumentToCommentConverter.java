@@ -17,7 +17,7 @@
 package org.gel.cva.storage.mongodb.knownvariant.converters;
 
 import org.bson.Document;
-import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariant;
+import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariantWrapper;
 import org.gel.models.cva.avro.*;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
 
@@ -32,7 +32,7 @@ public class DocumentToCommentConverter extends GenericDocumentComplexConverter<
     public static final String AUTHOR = "author";
 
     /**
-     * Create a converter between {@link KnownVariant} and {@link Document} entities
+     * Create a converter between {@link KnownVariantWrapper} and {@link Document} entities
      */
     public DocumentToCommentConverter() {
         super(Comment.class);
