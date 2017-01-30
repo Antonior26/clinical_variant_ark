@@ -120,12 +120,15 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * @param consistencyStatus             the consistency status of the curation
      * @throws IllegalCvaArgumentException  wrong parameters in the call
      */
+    @Override
     public void addCuration(String curator,
                             String phenotype,
                             ReportedModeOfInheritance modeOfInheritance,
                             CurationClassification curationClassification,
                             ManualCurationConfidence manualCurationConfidence,
-                            ConsistencyStatus consistencyStatus)
+                            ConsistencyStatus consistencyStatus,
+                            Float penetrance,
+                            Boolean variableExpressivity)
             throws IllegalCvaArgumentException {
         // Create a new Curation
         HeritablePhenotype heritablePhenotype = new HeritablePhenotype(phenotype, modeOfInheritance);
@@ -135,7 +138,9 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
                 null,
                 this.getSOClassificationFromClassification(curationClassification),
                 manualCurationConfidence,
-                consistencyStatus
+                consistencyStatus,
+                penetrance,
+                variableExpressivity
         );
         // Sanity checks on the curation
         newCuration = this.curationSanityChecks(newCuration, curator);
@@ -193,6 +198,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * @param description               the evidence description
      * @throws IllegalCvaArgumentException      wrong parameters in the call
      */
+    @Override
     public void addEvidence(String submitter,
                             String sourceName,
                             SourceType sourceType,
@@ -250,6 +256,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * @return                      matching list of `CurationEntry`
      * @throws IllegalCvaArgumentException      when no phenotype is provided
      */
+    @Override
     public List<CurationEntry> getCurationEntryByHeritablePhenotype(
             String phenotype,
             ReportedModeOfInheritance modeOfInheritance)
@@ -267,6 +274,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * @return                      matching list of `CurationEntry`
      * @throws IllegalCvaArgumentException      when no phenotype is provided
      */
+    @Override
     public List<CurationEntry> getCurationEntryByHeritablePhenotypes(
             String phenotype,
             List<ReportedModeOfInheritance> modeOfInheritances)
@@ -306,6 +314,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * @return                      matching list of `EvidenceEntry`
      * @throws IllegalCvaArgumentException      when no phenotype is provided
      */
+    @Override
     public List<EvidenceEntry> getEvidenceEntryByHeritablePhenotype(
             String phenotype,
             ReportedModeOfInheritance modeOfInheritance)
@@ -323,6 +332,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * @return                      matching list of `EvidenceEntry`
      * @throws IllegalCvaArgumentException      when no phenotype is provided
      */
+    @Override
     public List<EvidenceEntry> getEvidenceEntryByHeritablePhenotypes(
             String phenotype,
             List<ReportedModeOfInheritance> modeOfInheritances)
@@ -387,6 +397,12 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
         if (heritablePhenotype.getInheritanceMode() == null) {
             // Sets the inheritance phenotype to NA when null
             heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.NA);
+        }
+        // checks correct value of penetrance
+        if (curation.getPenetrance() != null &&
+                (curation.getPenetrance() < 0 || curation.getPenetrance() > 1)) {
+            throw new IllegalCvaArgumentException("Incorrect penetrance value provided. " +
+                    "It must be a value in the range [0, 1]");
         }
         return curation;
     }

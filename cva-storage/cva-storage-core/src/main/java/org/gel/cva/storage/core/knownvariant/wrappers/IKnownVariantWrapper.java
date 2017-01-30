@@ -12,30 +12,33 @@ import java.util.List;
  */
 public interface IKnownVariantWrapper {
 
-    void addCuration(String curator,
-                            String phenotype,
-                            ReportedModeOfInheritance modeOfInheritance,
-                            CurationClassification curationClassification,
-                            ManualCurationConfidence manualCurationConfidence,
-                            ConsistencyStatus consistencyStatus)
+    void addCuration(
+            String curator,
+            String phenotype,
+            ReportedModeOfInheritance modeOfInheritance,
+            CurationClassification curationClassification,
+            ManualCurationConfidence manualCurationConfidence,
+            ConsistencyStatus consistencyStatus,
+            Float penetrance,
+            Boolean variableExpressivity)
             throws IllegalCvaArgumentException;
 
-    void addEvidence(String submitter,
-                     String sourceName,
-                     SourceType sourceType,
-                     String sourceVersion,
-                     String sourceUrl,
-                     String sourceId,
-                     AlleleOrigin alleleOrigin,
-                     List<HeritablePhenotype> heritablePhenotypes,
-                     EvidencePathogenicity evidencePathogenicity,
-                     EvidenceBenignity evidenceBenignity,
-                     String pubmedId,
-                     String study,
-                     Integer numberOfIndividuals,
-                     EthnicCategory ethnicCategory,
-                     String description
-    )
+    void addEvidence(
+            String submitter,
+            String sourceName,
+            SourceType sourceType,
+            String sourceVersion,
+            String sourceUrl,
+            String sourceId,
+            AlleleOrigin alleleOrigin,
+            List<HeritablePhenotype> heritablePhenotypes,
+            EvidencePathogenicity evidencePathogenicity,
+            EvidenceBenignity evidenceBenignity,
+            String pubmedId,
+            String study,
+            Integer numberOfIndividuals,
+            EthnicCategory ethnicCategory,
+            String description)
             throws IllegalCvaArgumentException;
 
     List<CurationEntry> getCurationEntryByHeritablePhenotype(

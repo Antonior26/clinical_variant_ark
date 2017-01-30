@@ -76,7 +76,9 @@ public class KnownVariantWrapperTest {
             ReportedModeOfInheritance inheritance,
             CurationClassification curationClassification,
             ManualCurationConfidence manualCurationConfidence,
-            ConsistencyStatus consistencyStatus) {
+            ConsistencyStatus consistencyStatus,
+            Float penetrance,
+            Boolean variableExpressivity) {
 
         try {
             knownVariantWrapper.addCuration(
@@ -85,7 +87,9 @@ public class KnownVariantWrapperTest {
                     inheritance,
                     curationClassification,
                     manualCurationConfidence,
-                    consistencyStatus
+                    consistencyStatus,
+                    penetrance,
+                    variableExpressivity
             );
         }
         catch (IllegalCvaArgumentException ex) {
@@ -129,6 +133,8 @@ public class KnownVariantWrapperTest {
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
         ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
+        Float penetrance = 0.99f;
+        Boolean variableExpressivity = true;
         this.createCuration(
                 knownVariantWrapper,
                 curator,
@@ -136,7 +142,9 @@ public class KnownVariantWrapperTest {
                 inheritance,
                 CurationClassification.benign_variant,
                 manualCurationConfidence,
-                consistencyStatus
+                consistencyStatus,
+                penetrance,
+                variableExpressivity
         );
         assertEquals(1, knownVariantWrapper.getImpl().getCurations().size());
         List<CurationEntry> curationEntriesEmpty = null;
@@ -185,7 +193,9 @@ public class KnownVariantWrapperTest {
                 inheritance,
                 CurationClassification.pathogenic_variant,
                 manualCurationConfidence,
-                null
+                null,
+                penetrance,
+                variableExpressivity
         );
         assertEquals(1, knownVariantWrapper.getImpl().getCurations().size());
         try {
@@ -227,7 +237,9 @@ public class KnownVariantWrapperTest {
                 inheritance,
                 CurationClassification.established_risk_allele,
                 manualCurationConfidence,
-                null
+                null,
+                penetrance,
+                variableExpressivity
         );
         assertEquals(2, knownVariantWrapper.getImpl().getCurations().size());
         try {
@@ -447,13 +459,17 @@ public class KnownVariantWrapperTest {
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
         ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
+        Float penetrance = 0.99f;
+        Boolean variableExpressivity = true;
         knownVariantWrapper.addCuration(
                 curator,
                 phenotype,
                 inheritance,
                 CurationClassification.pathogenic_variant,
                 manualCurationConfidence,
-                consistencyStatus
+                consistencyStatus,
+                penetrance,
+                variableExpressivity
         );
     }
 
@@ -480,13 +496,17 @@ public class KnownVariantWrapperTest {
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
         ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
+        Float penetrance = 0.99f;
+        Boolean variableExpressivity = true;
         knownVariantWrapper.addCuration(
                 curator,
                 phenotype,
                 inheritance,
                 CurationClassification.pathogenic_variant,
                 manualCurationConfidence,
-                consistencyStatus
+                consistencyStatus,
+                penetrance,
+                variableExpressivity
         );
     }
 
@@ -513,13 +533,17 @@ public class KnownVariantWrapperTest {
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
         ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
+        Float penetrance = 0.99f;
+        Boolean variableExpressivity = true;
         knownVariantWrapper.addCuration(
                 curator,
                 phenotype,
                 inheritance,
                 CurationClassification.pathogenic_variant,
                 manualCurationConfidence,
-                consistencyStatus
+                consistencyStatus,
+                penetrance,
+                variableExpressivity
         );
     }
 
@@ -546,13 +570,17 @@ public class KnownVariantWrapperTest {
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
         ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
+        Float penetrance = 0.99f;
+        Boolean variableExpressivity = true;
         knownVariantWrapper.addCuration(
                 curator,
                 phenotype,
                 inheritance,
                 CurationClassification.pathogenic_variant,
                 manualCurationConfidence,
-                consistencyStatus
+                consistencyStatus,
+                penetrance,
+                variableExpressivity
         );
     }
 
@@ -579,6 +607,8 @@ public class KnownVariantWrapperTest {
         ReportedModeOfInheritance inheritance = null;
         ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
+        Float penetrance = 0.99f;
+        Boolean variableExpressivity = true;
         createCuration(
                 knownVariantWrapper,
                 curator,
@@ -586,7 +616,9 @@ public class KnownVariantWrapperTest {
                 inheritance,
                 CurationClassification.pathogenic_variant,
                 manualCurationConfidence,
-                consistencyStatus
+                consistencyStatus,
+                penetrance,
+                variableExpressivity
         );
         List<CurationEntry> curationEntries = null;
         try {
@@ -873,6 +905,80 @@ public class KnownVariantWrapperTest {
                 null,
                 null,
                 "A very bad evidence"
+        );
+    }
+
+    /**
+     * Test for penetrance > 1.0
+     */
+    @Test(expected = IllegalCvaArgumentException.class)
+    public void testKnownVariantWrapper13() throws IllegalCvaArgumentException {
+
+        String submitter = "theSubmitter";
+        String chromosome = "chr19";
+        Integer position = 44908684;
+        String reference = "T";
+        String alternate = "C";
+        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
+        String curator = "theCurator";
+        String phenotype = "HPO:000001";
+        ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
+        ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
+        ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
+        Float penetrance = 1.1f;
+        Boolean variableExpressivity = true;
+        knownVariantWrapper.addCuration(
+                curator,
+                phenotype,
+                inheritance,
+                CurationClassification.pathogenic_variant,
+                manualCurationConfidence,
+                consistencyStatus,
+                penetrance,
+                variableExpressivity
+        );
+    }
+
+    /**
+     * Test for penetrance < 0.0
+     */
+    @Test(expected = IllegalCvaArgumentException.class)
+    public void testKnownVariantWrapper14() throws IllegalCvaArgumentException {
+
+        String submitter = "theSubmitter";
+        String chromosome = "chr19";
+        Integer position = 44908684;
+        String reference = "T";
+        String alternate = "C";
+        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
+        String curator = "theCurator";
+        String phenotype = "HPO:000001";
+        ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
+        ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
+        ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
+        Float penetrance = -0.1f;
+        Boolean variableExpressivity = true;
+        knownVariantWrapper.addCuration(
+                curator,
+                phenotype,
+                inheritance,
+                CurationClassification.pathogenic_variant,
+                manualCurationConfidence,
+                consistencyStatus,
+                penetrance,
+                variableExpressivity
         );
     }
 }
