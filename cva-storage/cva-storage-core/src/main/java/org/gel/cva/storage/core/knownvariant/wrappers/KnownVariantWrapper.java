@@ -20,12 +20,15 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.gel.cva.storage.core.config.CvaConfiguration;
 import org.gel.cva.storage.core.exceptions.IllegalCvaArgumentException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
+import org.gel.cva.storage.core.helpers.AvroHelper;
 import org.gel.cva.storage.core.helpers.CvaDateFormatter;
 import org.gel.models.cva.avro.*;
 import org.gel.models.report.avro.EthnicCategory;
 import org.gel.models.report.avro.ReportedModeOfInheritance;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.biodata.models.variant.avro.Xref;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 import org.opencb.opencga.storage.core.variant.annotation.annotators.CellBaseDirectVariantAnnotator;
 
@@ -115,6 +118,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * @param curator                       the curator's user name
      * @param phenotype                     the phenotype to which the curation is associated
      * @param modeOfInheritance             the mode of inheritance
+     * @param transcript                    the transcript to which the curation refers specifically
      * @param curationClassification        the curation classification
      * @param manualCurationConfidence      the manual curation confidence
      * @param consistencyStatus             the consistency status of the curation
@@ -124,16 +128,19 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
     public void addCuration(String curator,
                             String phenotype,
                             ReportedModeOfInheritance modeOfInheritance,
+                            Xref transcript,
                             CurationClassification curationClassification,
                             ManualCurationConfidence manualCurationConfidence,
                             ConsistencyStatus consistencyStatus,
                             Float penetrance,
                             Boolean variableExpressivity)
             throws IllegalCvaArgumentException {
+
         // Create a new Curation
         HeritablePhenotype heritablePhenotype = new HeritablePhenotype(phenotype, modeOfInheritance);
         Curation newCuration = new Curation(
                 heritablePhenotype,
+                transcript,
                 curationClassification,
                 null,
                 this.getSOClassificationFromClassification(curationClassification),
@@ -144,8 +151,8 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
         );
         // Sanity checks on the curation
         newCuration = this.curationSanityChecks(newCuration, curator);
-        // Checks if there are previous curations for this heritablePhenotype
-        CurationEntry curationEntry = this.getCurationEntryByHeritablePhenotype(heritablePhenotype);
+        // Checks if there are previous curations for this heritablePhenotype and transcript
+        CurationEntry curationEntry = this.getCurationEntryByHeritablePhenotype(heritablePhenotype, transcript);
         if (curationEntry == null) {
             // First curation
             CurationHistoryEntry curationHistoryEntry = new CurationHistoryEntry(
@@ -175,7 +182,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
         this.setCurationEntry(curationEntry);
         // Updates consistency status
         if (consistencyStatus == null) {
-            this.updateConsistencyStatus(heritablePhenotype);
+            this.updateConsistencyStatus(heritablePhenotype, transcript);
         }
     }
 
@@ -189,6 +196,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * @param sourceId                  the ID of the evidence source
      * @param alleleOrigin              the allele origin
      * @param heritablePhenotypes       the list of heritable phenotypes
+     * @param transcript                the transcript to which the evidence specifically refers
      * @param evidencePathogenicity     the pathogenicity of the evidence
      * @param evidenceBenignity         the benignity of the evidence
      * @param pubmedId                  the PubMed id
@@ -207,6 +215,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
                             String sourceId,
                             AlleleOrigin alleleOrigin,
                             List<HeritablePhenotype> heritablePhenotypes,
+                            Xref transcript,
                             EvidencePathogenicity evidencePathogenicity,
                             EvidenceBenignity evidenceBenignity,
                             String pubmedId,
@@ -226,6 +235,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
                 evidenceSource,
                 alleleOrigin,
                 heritablePhenotypes,
+                transcript,
                 evidencePathogenicity,
                 evidenceBenignity,
                 pubmedId,
@@ -243,7 +253,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
         impl.setEvidences(evidences);
         // Update the consistency status for all affected curations
         for (HeritablePhenotype heritablePhenotype: heritablePhenotypes) {
-            this.updateConsistencyStatus(heritablePhenotype);
+            this.updateConsistencyStatus(heritablePhenotype, transcript);
         }
     }
 
@@ -297,7 +307,6 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
                 for (ReportedModeOfInheritance modeOfInheritance : modeOfInheritances) {
                     if (thisModeOfInheritance == modeOfInheritance) {
                         results.add(curationEntry);
-                        break;
                     }
                 }
             }
@@ -371,6 +380,34 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
     }
 
     /**
+     * Checks if a given transcript exists in the annotations
+     * Cannot use the equals method...
+     * @param transcript       the transcript to be checked for existence
+     * @return                  boolean indicating if the transcript exists or not
+     * PRE: the variant is annotated
+     */
+    private Boolean isTranscriptInAnnotations(Xref transcript) {
+
+        Boolean match = false;
+        if (this.getVariant().getAnnotation() != null) {
+            //List<Xref> transcripts = this.getVariant().getAnnotation().getConsequenceTypes();
+            List<Xref> transcripts = new ArrayList<Xref>();
+            for (ConsequenceType consequenceType: this.getVariant().getAnnotation().getConsequenceTypes()) {
+                transcripts.add(new Xref(consequenceType.getEnsemblTranscriptId(), "ensemblTranscript"));
+            }
+            if (transcripts != null && transcripts.size() > 0) {
+                for (Xref thisTranscript : transcripts) {
+                    if (AvroHelper.areXrefEqual(transcript, thisTranscript)) {
+                        match = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return match;
+    }
+
+    /**
      * Checks that values in a Curation event object are valid
      * @param curation      the curation data to be checked
      * @param curator       the curator to be checked
@@ -379,6 +416,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      */
     private Curation curationSanityChecks(Curation curation, String curator)
             throws IllegalCvaArgumentException {
+
         // checks required fields at curation
         if (curation == null) {
             throw new IllegalCvaArgumentException("Curation is required!");
@@ -404,6 +442,13 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
             throw new IllegalCvaArgumentException("Incorrect penetrance value provided. " +
                     "It must be a value in the range [0, 1]");
         }
+        // checks if the transcript exists in the annotations if we have annotations
+        if (curation.getTranscript() != null) {
+            if (! this.isTranscriptInAnnotations(curation.getTranscript())) {
+                throw new IllegalCvaArgumentException("Non existing transcript was referenced when trying to add a " +
+                        "curation!");
+            }
+        }
         return curation;
     }
 
@@ -414,6 +459,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      */
     private EvidenceEntry evidenceSanityChecks(EvidenceEntry evidenceEntry)
             throws IllegalCvaArgumentException {
+
         if (evidenceEntry == null) {
             throw new IllegalCvaArgumentException("EvidenceEntry is required!");
         }
@@ -432,6 +478,13 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
         if (evidenceEntry.getBenignity() == null && evidenceEntry.getPathogenicity() == null) {
             throw new IllegalCvaArgumentException("An evidence must indicate either pathogenicity or benignity!");
         }
+        // checks if the transcript exists in the annotations if we have annotations
+        if (evidenceEntry.getTranscript() != null) {
+            if (! this.isTranscriptInAnnotations(evidenceEntry.getTranscript())) {
+                throw new IllegalCvaArgumentException("Non existing transcript was referenced when trying to add an " +
+                        "evidence!");
+            }
+        }
         return evidenceEntry;
     }
 
@@ -442,6 +495,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      */
     private void sourceSanityChecks(EvidenceSource evidenceSource)
             throws IllegalCvaArgumentException {
+
         if (evidenceSource == null) {
             throw new IllegalCvaArgumentException("Evidence source is required!");
         }
@@ -453,15 +507,21 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
     /**
      * Returns a CurationEntry for the given heritablePhenotype if any.
      * Returns null when there is no match
-     * PRE: there can be only one CurationEntry with this HeritablePhenotype
+     * PRE: there can be only one CurationEntry with this HeritablePhenotype and transcript
      * @param heritablePhenotype    A given HeritablePhenotype
+     * @param transcript            The transcript to which the curation refers. This parameter is nullable.
      * @return the matching CurationEntry
      */
-    private CurationEntry getCurationEntryByHeritablePhenotype(HeritablePhenotype heritablePhenotype) {
+    private CurationEntry getCurationEntryByHeritablePhenotype(
+            HeritablePhenotype heritablePhenotype,
+            Xref transcript) {
+
         CurationEntry curationEntry = null;
         for (CurationEntry ce: this.impl.getCurations()) {
-            HeritablePhenotype hp = ce.getCuration().getHeritablePhenotype();
-            if (this.areEqualHeritablePhenotypes(hp, heritablePhenotype)) {
+            HeritablePhenotype thisHeritablePhenotype = ce.getCuration().getHeritablePhenotype();
+            Xref thisTranscript = ce.getCuration().getTranscript();
+            if (AvroHelper.areHeritablePhenotypeEqual(thisHeritablePhenotype, heritablePhenotype) &&
+                    (AvroHelper.areXrefEqual(thisTranscript, transcript))) {
                 curationEntry = ce;
                 break;
             }
@@ -470,25 +530,15 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
     }
 
     /**
-     * Compares two HeritablePhenotypes
-     * @param heritablePhenotype1   the HeritablePhenotype1
-     * @param heritablePhenotype2   the HeritablePhenotype2
-     * @return      are these heritable pehnotypes equals
-     */
-    private Boolean areEqualHeritablePhenotypes(HeritablePhenotype heritablePhenotype1,
-                                                HeritablePhenotype heritablePhenotype2) {
-        return heritablePhenotype1.getPhenotype().equals(heritablePhenotype2.getPhenotype()) &&
-                heritablePhenotype1.getInheritanceMode() == heritablePhenotype2.getInheritanceMode();
-    }
-
-    /**
      * Stores a new CurationEntry respecting uniqueness by HeritablePhenotype.
      * If a previous CurationEntry exists it replaces it, otherwise a new CurationEntry is stored.
      * @param newCurationEntry     the curationEntry to store
      */
     private void setCurationEntry(CurationEntry newCurationEntry) {
+
         CurationEntry existingCurationEntry = this.getCurationEntryByHeritablePhenotype(
-                newCurationEntry.getCuration().getHeritablePhenotype());
+                newCurationEntry.getCuration().getHeritablePhenotype(),
+                newCurationEntry.getCuration().getTranscript());
         List<CurationEntry> curationEntries = impl.getCurations();
         if (existingCurationEntry != null) {
             // Replaces the existing CurationEntry
@@ -507,9 +557,11 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * The update is based on the existing evidences associated to the heritablePhenotype and also those
      * not associated to any phenotype.
      * @param heritablePhenotype    The heritablePhenotype that requires updating consistency status
+     * @param transcript            The transcript that requires updatign consistency status
      */
-    private Boolean updateConsistencyStatus(HeritablePhenotype heritablePhenotype) {
-        CurationEntry curationEntry = this.getCurationEntryByHeritablePhenotype(heritablePhenotype);
+    private Boolean updateConsistencyStatus(HeritablePhenotype heritablePhenotype, Xref transcript) {
+
+        CurationEntry curationEntry = this.getCurationEntryByHeritablePhenotype(heritablePhenotype, transcript);
         Boolean isConflict = false;
         if (curationEntry != null) {
             // Counts the evidences in both directions
@@ -551,6 +603,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * @return                  true if the evidence indicates pathogenicity
      */
     private Boolean isEvidencePathogenic(EvidenceEntry evidenceEntry) {
+
         return evidenceEntry.getPathogenicity() != null;
     }
 
@@ -569,6 +622,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * @throws IllegalCvaConfigurationException     wrong CVA settings
      */
     private void annotateVariant() throws VariantAnnotatorException, IllegalCvaConfigurationException {
+
         CellBaseDirectVariantAnnotator cellBaseDirectVariantAnnotator =
                 CvaConfiguration.getCellBaseDirectVariantAnnotator();
         List<VariantAnnotation> variantAnnotations = null;
@@ -590,7 +644,9 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * @param curationClassification    the curation classification
      * @return                          the associated SO terms
      */
-    private CurationSOClassification getSOClassificationFromClassification(CurationClassification curationClassification) {
+    private CurationSOClassification getSOClassificationFromClassification(
+            CurationClassification curationClassification) {
+
         CurationSOClassification curationSOClassification = null;
         switch (curationClassification) {
             case benign_variant:

@@ -4,6 +4,7 @@ import org.gel.cva.storage.core.exceptions.IllegalCvaArgumentException;
 import org.gel.models.cva.avro.*;
 import org.gel.models.report.avro.EthnicCategory;
 import org.gel.models.report.avro.ReportedModeOfInheritance;
+import org.opencb.biodata.models.variant.avro.Xref;
 
 import java.util.List;
 
@@ -16,6 +17,7 @@ public interface IKnownVariantWrapper {
             String curator,
             String phenotype,
             ReportedModeOfInheritance modeOfInheritance,
+            Xref transcript,
             CurationClassification curationClassification,
             ManualCurationConfidence manualCurationConfidence,
             ConsistencyStatus consistencyStatus,
@@ -32,6 +34,7 @@ public interface IKnownVariantWrapper {
             String sourceId,
             AlleleOrigin alleleOrigin,
             List<HeritablePhenotype> heritablePhenotypes,
+            Xref transcript,
             EvidencePathogenicity evidencePathogenicity,
             EvidenceBenignity evidenceBenignity,
             String pubmedId,
