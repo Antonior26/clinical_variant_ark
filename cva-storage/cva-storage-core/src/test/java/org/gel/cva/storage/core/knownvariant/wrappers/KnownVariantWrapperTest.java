@@ -1180,4 +1180,56 @@ public class KnownVariantWrapperTest {
         CurationEntry curationEntry2 = curationEntries.get(1);
         assertEquals(1, curationEntry2.getHistory().size());
     }
+
+    /**
+     * Test variant normalization
+     */
+    @Test
+    public void testKnownVariantWrapper16() throws IllegalCvaArgumentException {
+
+        String submitter = "theSubmitter";
+        String chromosome = "chr19";
+        Integer position = 44908684;
+        String reference = "TT";
+        String alternate = "TTG";
+        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
+        assertEquals(new Integer(position + 2), knownVariantWrapper.getVariant().getStart());
+        assertEquals("", knownVariantWrapper.getVariant().getReference());
+        assertEquals("G", knownVariantWrapper.getVariant().getAlternate());
+        assertEquals("19", knownVariantWrapper.getVariant().getChromosome());
+
+        reference = "TTTG";
+        alternate = "G";
+        knownVariantWrapper = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
+        assertEquals(new Integer(position), knownVariantWrapper.getVariant().getStart());
+        assertEquals("TTT", knownVariantWrapper.getVariant().getReference());
+        assertEquals("", knownVariantWrapper.getVariant().getAlternate());
+        assertEquals("19", knownVariantWrapper.getVariant().getChromosome());
+
+        reference = "TTTG";
+        alternate = "TCTG";
+        knownVariantWrapper = this.createKnownVariant(
+                submitter,
+                chromosome,
+                position,
+                reference,
+                alternate
+        );
+        assertEquals(new Integer(position + 1), knownVariantWrapper.getVariant().getStart());
+        assertEquals("T", knownVariantWrapper.getVariant().getReference());
+        assertEquals("C", knownVariantWrapper.getVariant().getAlternate());
+        assertEquals("19", knownVariantWrapper.getVariant().getChromosome());
+    }
 }

@@ -93,7 +93,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
                     "You need to split the variant and register each of them separately.");
         }
         // stores a reference to the OpenCB variant
-        this.variant = variant;
+        this.variant = variants.get(0);
         // creates the underlying KnownVariantAvro model with default values
         this.impl = new KnownVariant(
                 submitter,
