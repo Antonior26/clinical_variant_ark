@@ -10,15 +10,15 @@ public class AvroHelper {
 
     /**
      *
-     * @param xref1
-     * @param xref2
+     * @param transcript1
+     * @param transcript2
      * @return
      */
-    public static Boolean areXrefEqual(Xref xref1, Xref xref2) {
+    public static Boolean areTranscriptsEqual(String transcript1, String transcript2) {
 
-        Boolean equal = xref1 == null && xref2 == null;
-        if (xref1 != null && xref2 != null) {
-            equal = xref1.getId().equals(xref2.getId()) && xref1.getSource().equals(xref2.getSource());
+        Boolean equal = transcript1 == null && transcript2 == null;
+        if (transcript1 != null && transcript2 != null) {
+            equal = transcript1.equals(transcript2);
         }
         return equal;
     }

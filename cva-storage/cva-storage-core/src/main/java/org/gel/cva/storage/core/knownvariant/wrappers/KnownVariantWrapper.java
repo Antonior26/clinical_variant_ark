@@ -28,7 +28,6 @@ import org.gel.models.report.avro.ReportedModeOfInheritance;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
-import org.opencb.biodata.models.variant.avro.Xref;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 import org.opencb.opencga.storage.core.variant.annotation.annotators.CellBaseDirectVariantAnnotator;
 
@@ -46,6 +45,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
 
     private KnownVariant impl;
     private Variant variant;
+    private List<String> transcripts = null;
 
     /**
      * Constructor from the avro object
@@ -65,8 +65,9 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * @param submitter         the submitter of the variant
      * @param variant           the Variant wrapper
      */
-    public KnownVariantWrapper(String submitter,
-                               Variant variant)
+    public KnownVariantWrapper(
+            String submitter,
+            Variant variant)
             throws VariantAnnotatorException, IllegalCvaConfigurationException{
         // stores a reference to the OpenCB variant
         this.variant = variant;
@@ -92,7 +93,12 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * @throws VariantAnnotatorException            wrong annotation (this excceptions need to be managed...)
      * @throws IllegalCvaConfigurationException     Wrong CVA settings
      */
-    public KnownVariantWrapper(String submitter, String chromosome, int position, String reference, String alternate)
+    public KnownVariantWrapper(
+            String submitter,
+            String chromosome,
+            int position,
+            String reference,
+            String alternate)
             throws VariantAnnotatorException, IllegalCvaConfigurationException{
         this(submitter, new Variant(chromosome, position, reference, alternate));
     }
@@ -114,7 +120,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
     }
 
     /**
-     *
+     * Adds a curation to this KnownVariant
      * @param curator                       the curator's user name
      * @param phenotype                     the phenotype to which the curation is associated
      * @param modeOfInheritance             the mode of inheritance
@@ -128,7 +134,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
     public void addCuration(String curator,
                             String phenotype,
                             ReportedModeOfInheritance modeOfInheritance,
-                            Xref transcript,
+                            String transcript,
                             CurationClassification curationClassification,
                             ManualCurationConfidence manualCurationConfidence,
                             ConsistencyStatus consistencyStatus,
@@ -215,7 +221,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
                             String sourceId,
                             AlleleOrigin alleleOrigin,
                             List<HeritablePhenotype> heritablePhenotypes,
-                            Xref transcript,
+                            String transcript,
                             EvidencePathogenicity evidencePathogenicity,
                             EvidenceBenignity evidenceBenignity,
                             String pubmedId,
@@ -381,28 +387,15 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
 
     /**
      * Checks if a given transcript exists in the annotations
-     * Cannot use the equals method...
      * @param transcript       the transcript to be checked for existence
      * @return                  boolean indicating if the transcript exists or not
      * PRE: the variant is annotated
      */
-    private Boolean isTranscriptInAnnotations(Xref transcript) {
+    private Boolean isTranscriptInAnnotations(String transcript) {
 
         Boolean match = false;
-        if (this.getVariant().getAnnotation() != null) {
-            //List<Xref> transcripts = this.getVariant().getAnnotation().getConsequenceTypes();
-            List<Xref> transcripts = new ArrayList<Xref>();
-            for (ConsequenceType consequenceType: this.getVariant().getAnnotation().getConsequenceTypes()) {
-                transcripts.add(new Xref(consequenceType.getEnsemblTranscriptId(), "ensemblTranscript"));
-            }
-            if (transcripts != null && transcripts.size() > 0) {
-                for (Xref thisTranscript : transcripts) {
-                    if (AvroHelper.areXrefEqual(transcript, thisTranscript)) {
-                        match = true;
-                        break;
-                    }
-                }
-            }
+        if (this.transcripts != null) {
+            match = this.transcripts.contains(transcript);
         }
         return match;
     }
@@ -514,14 +507,14 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      */
     private CurationEntry getCurationEntryByHeritablePhenotype(
             HeritablePhenotype heritablePhenotype,
-            Xref transcript) {
+            String transcript) {
 
         CurationEntry curationEntry = null;
         for (CurationEntry ce: this.impl.getCurations()) {
             HeritablePhenotype thisHeritablePhenotype = ce.getCuration().getHeritablePhenotype();
-            Xref thisTranscript = ce.getCuration().getTranscript();
+            String thisTranscript = ce.getCuration().getTranscript();
             if (AvroHelper.areHeritablePhenotypeEqual(thisHeritablePhenotype, heritablePhenotype) &&
-                    (AvroHelper.areXrefEqual(thisTranscript, transcript))) {
+                    (AvroHelper.areTranscriptsEqual(thisTranscript, transcript))) {
                 curationEntry = ce;
                 break;
             }
@@ -559,7 +552,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * @param heritablePhenotype    The heritablePhenotype that requires updating consistency status
      * @param transcript            The transcript that requires updatign consistency status
      */
-    private Boolean updateConsistencyStatus(HeritablePhenotype heritablePhenotype, Xref transcript) {
+    private Boolean updateConsistencyStatus(HeritablePhenotype heritablePhenotype, String transcript) {
 
         CurationEntry curationEntry = this.getCurationEntryByHeritablePhenotype(heritablePhenotype, transcript);
         Boolean isConflict = false;
@@ -637,6 +630,11 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
             variantAnnotation = variantAnnotations.get(0);
         }
         this.impl.getVariant().setAnnotation(variantAnnotation);
+        // Sets list of overlapping transcripts
+        this.transcripts = new ArrayList<>();
+        for (ConsequenceType consequenceType: variantAnnotation.getConsequenceTypes()) {
+            transcripts.add(consequenceType.getEnsemblTranscriptId());
+        }
     }
 
     /**

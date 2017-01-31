@@ -23,7 +23,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.opencb.biodata.models.variant.avro.Xref;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 
 import java.util.*;
@@ -75,7 +74,7 @@ public class KnownVariantWrapperTest {
             String curator,
             String phenotype,
             ReportedModeOfInheritance inheritance,
-            Xref transcript,
+            String transcript,
             CurationClassification curationClassification,
             ManualCurationConfidence manualCurationConfidence,
             ConsistencyStatus consistencyStatus,
@@ -134,7 +133,7 @@ public class KnownVariantWrapperTest {
         String curator = "theCurator";
         String phenotype = "HPO:000001";
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
-        Xref transcript = null;
+        String transcript = null;
         ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
         Float penetrance = 0.99f;
@@ -470,7 +469,7 @@ public class KnownVariantWrapperTest {
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
         Float penetrance = 0.99f;
         Boolean variableExpressivity = true;
-        Xref transcript = null;
+        String transcript = null;
         knownVariantWrapper.addCuration(
                 curator,
                 phenotype,
@@ -509,7 +508,7 @@ public class KnownVariantWrapperTest {
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
         Float penetrance = 0.99f;
         Boolean variableExpressivity = true;
-        Xref transcript = null;
+        String transcript = null;
         knownVariantWrapper.addCuration(
                 curator,
                 phenotype,
@@ -548,7 +547,7 @@ public class KnownVariantWrapperTest {
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
         Float penetrance = 0.99f;
         Boolean variableExpressivity = true;
-        Xref transcript = null;
+        String transcript = null;
         knownVariantWrapper.addCuration(
                 curator,
                 phenotype,
@@ -587,7 +586,7 @@ public class KnownVariantWrapperTest {
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
         Float penetrance = 0.99f;
         Boolean variableExpressivity = true;
-        Xref transcript = null;
+        String transcript = null;
         knownVariantWrapper.addCuration(
                 curator,
                 phenotype,
@@ -626,7 +625,7 @@ public class KnownVariantWrapperTest {
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
         Float penetrance = 0.99f;
         Boolean variableExpressivity = true;
-        Xref transcript = null;
+        String transcript = null;
         createCuration(
                 knownVariantWrapper,
                 curator,
@@ -672,7 +671,7 @@ public class KnownVariantWrapperTest {
         HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
         submitter = null;
         String phenotype = "HP:0000001";
-        Xref transcript = null;
+        String transcript = null;
         heritablePhenotype.setPhenotype(phenotype);
         heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
         heritablePhenotypes.add(heritablePhenotype);
@@ -718,7 +717,7 @@ public class KnownVariantWrapperTest {
         HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
         submitter = "";
         String phenotype = "HP:0000001";
-        Xref transcript = null;
+        String transcript = null;
         heritablePhenotype.setPhenotype(phenotype);
         heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
         heritablePhenotypes.add(heritablePhenotype);
@@ -764,7 +763,7 @@ public class KnownVariantWrapperTest {
         HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
         submitter = "theSubmitter";
         String phenotype = "HP:0000001";
-        Xref transcript = null;
+        String transcript = null;
         heritablePhenotype.setPhenotype(phenotype);
         heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
         heritablePhenotypes.add(heritablePhenotype);
@@ -810,7 +809,7 @@ public class KnownVariantWrapperTest {
         HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
         submitter = "theSubmitter";
         String phenotype = "HP:0000001";
-        Xref transcript = null;
+        String transcript = null;
         heritablePhenotype.setPhenotype(phenotype);
         heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
         heritablePhenotypes.add(heritablePhenotype);
@@ -856,7 +855,7 @@ public class KnownVariantWrapperTest {
         HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
         submitter = "theSubmitter";
         String phenotype = "HP:0000001";
-        Xref transcript = null;
+        String transcript = null;
         heritablePhenotype.setPhenotype(phenotype);
         heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
         heritablePhenotypes.add(heritablePhenotype);
@@ -915,7 +914,7 @@ public class KnownVariantWrapperTest {
         HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
         submitter = "theSubmitter";
         String phenotype = "HP:0000001";
-        Xref transcript = null;
+        String transcript = null;
         heritablePhenotype.setPhenotype(phenotype);
         heritablePhenotype.setInheritanceMode(ReportedModeOfInheritance.monoallelic_maternally_imprinted);
         heritablePhenotypes.add(heritablePhenotype);
@@ -964,7 +963,7 @@ public class KnownVariantWrapperTest {
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
         Float penetrance = 1.1f;
         Boolean variableExpressivity = true;
-        Xref transcript = null;
+        String transcript = null;
         knownVariantWrapper.addCuration(
                 curator,
                 phenotype,
@@ -1003,7 +1002,7 @@ public class KnownVariantWrapperTest {
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
         Float penetrance = -0.1f;
         Boolean variableExpressivity = true;
-        Xref transcript = null;
+        String transcript = null;
         knownVariantWrapper.addCuration(
                 curator,
                 phenotype,
@@ -1054,9 +1053,8 @@ public class KnownVariantWrapperTest {
         String curator = "theCurator";
         String phenotype = "HPO:000001";
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
-        Xref transcript = new Xref(
-                knownVariantWrapper.getVariant().getAnnotation().getConsequenceTypes().get(0).getEnsemblTranscriptId(),
-                "ensemblTranscript");
+        String transcript = knownVariantWrapper.getVariant()
+                .getAnnotation().getConsequenceTypes().get(0).getEnsemblTranscriptId();
         ManualCurationConfidence manualCurationConfidence = ManualCurationConfidence.high_confidence;
         ConsistencyStatus consistencyStatus = ConsistencyStatus.consensus;
         Float penetrance = 0.99f;
