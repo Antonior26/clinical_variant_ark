@@ -51,7 +51,7 @@ public class KnownVariantMongoDBAdapterTest {
         result.stream().forEach(variant -> variant.setStudies(Collections.<StudyEntry>emptyList()));
 
         Variant variant = result.get(0);
-        KnownVariantWrapper knownVariantWrapper = new KnownVariantWrapper(variant);
+        KnownVariantWrapper knownVariantWrapper = new KnownVariantWrapper("submitter", variant);
         this.curatedVariantMongoDBAdaptor.insert(knownVariantWrapper, null);
     }
 

@@ -18,14 +18,14 @@ package org.gel.cva.storage.mongodb.knownvariant.converters;
 
 import org.bson.Document;
 import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariantWrapper;
-import org.gel.models.cva.avro.CurationHistoryEntry;
+import org.gel.models.cva.avro.CurationEntry;
 import org.opencb.commons.datastore.mongodb.GenericDocumentComplexConverter;
 
 
 /**
  * @author Pablo Riesgo Ferreiro <pablo.ferreiro@genomicsengland.co.uk>
  */
-public class DocumentToCurationHistoryEntryConverter extends GenericDocumentComplexConverter<CurationHistoryEntry> {
+public class DocumentToCurationEntryConverter extends GenericDocumentComplexConverter<CurationEntry> {
 
     public static final String DATE = "date";
     public static final String PREVIOUS_SCORE = "previousScore";
@@ -38,7 +38,7 @@ public class DocumentToCurationHistoryEntryConverter extends GenericDocumentComp
     /**
      * Create a converter between {@link KnownVariantWrapper} and {@link Document} entities
      */
-    public DocumentToCurationHistoryEntryConverter() {
-        super(CurationHistoryEntry.class);
+    public DocumentToCurationEntryConverter() {
+        super(CurationEntry.class);
     }
 }

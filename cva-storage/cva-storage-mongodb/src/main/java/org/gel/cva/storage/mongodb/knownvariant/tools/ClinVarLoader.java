@@ -8,7 +8,7 @@ import org.gel.models.cva.avro.AlleleOrigin;
 import org.gel.models.cva.avro.EvidenceEntry;
 import org.gel.cva.storage.mongodb.knownvariant.adaptors.KnownVariantMongoDBAdaptor;
 import org.gel.models.cva.avro.EvidenceSource;
-import org.gel.models.cva.avro.SourceClass;
+import org.gel.models.cva.avro.SourceType;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantSource;
 import org.opencb.biodata.models.variant.VariantStudy;
@@ -28,6 +28,8 @@ import java.util.Map;
  * Created by priesgo on 08/01/17.
  */
 public class ClinVarLoader {
+
+    private static final String submitter = "ClinVar-loader";
 
     public static String getCurationClassificationFromClinicalsignificance(String clinicalSignificance) {
         String curationClassification = null;
@@ -145,7 +147,7 @@ public class ClinVarLoader {
                 // Creates a ClinVar adhoc evidence
                 EvidenceEntry evidenceEntry = new EvidenceEntry();
                 EvidenceSource evidenceSource = new EvidenceSource();
-                evidenceSource.setClass$(SourceClass.database);
+                evidenceSource.setType(SourceType.database);
                 evidenceSource.setName("ClinVar");
                 evidenceSource.setVersion("20170104");
                 String clinVarUrl = String.format(
@@ -153,18 +155,17 @@ public class ClinVarLoader {
                 evidenceSource.setUrl(clinVarUrl);
                 evidenceEntry.setSource(evidenceSource);
                 evidenceEntry.setAlleleOrigin(getAlleleOriginFromSAO(sao));
-                evidenceEntry.setSubmitter("ClinVar loader");
+                evidenceEntry.setSubmitter(ClinVarLoader.submitter);
                 List<EvidenceEntry> evidences = new ArrayList<EvidenceEntry>();
                 evidences.add(evidenceEntry);
                 // Creates a curated variant
                 KnownVariantWrapper knownVariantWrapper = new KnownVariantWrapper(
-                        variant,
-                        getCurationClassificationFromClinicalsignificance(clinicalSignificance),
-                        getCurationScoreFromRevisionStatus(clinicalRevisionStatus),
-                        null,
-                        evidences,
-                        null
+                        ClinVarLoader.submitter,
+                        variant
                         );
+                // TODO: add created evidences to KnownVariant
+                // TODO: create an automatic curation status
+
                 // Inserts in Mongo
                 try {
                     knownVariantMongoDBAdaptor.insert(knownVariantWrapper, null);
