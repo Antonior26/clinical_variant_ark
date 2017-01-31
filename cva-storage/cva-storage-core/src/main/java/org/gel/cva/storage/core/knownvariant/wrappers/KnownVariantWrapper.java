@@ -17,6 +17,7 @@
 package org.gel.cva.storage.core.knownvariant.wrappers;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import org.apache.commons.lang.StringUtils;
 import org.gel.cva.storage.core.config.CvaConfiguration;
 import org.gel.cva.storage.core.exceptions.CvaException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaArgumentException;
@@ -30,6 +31,7 @@ import org.opencb.biodata.models.variant.Variant;
 import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
+import org.opencb.commons.utils.CryptoUtils;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 import org.opencb.opencga.storage.core.variant.annotation.annotators.CellBaseDirectVariantAnnotator;
 
@@ -76,10 +78,12 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * Constructor for KnownVariantWrapper
      * @param submitter         the submitter of the variant
      * @param variant           the Variant wrapper
+     * @param enableAnnotation  flag to perform annotation on the variant
      */
     public KnownVariantWrapper(
             String submitter,
-            Variant variant)
+            Variant variant,
+            Boolean enableAnnotation)
             throws VariantAnnotatorException,
             CvaException
     {
@@ -102,17 +106,55 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
                 new LinkedList<>(),
                 new LinkedList<>()
         );
-        // annotates the variant
-        this.annotateVariant();
+        if (enableAnnotation) {
+            // annotates the variant
+            this.annotateVariant();
+        }
+    }
+
+    /**
+     * Constructor for KnownVariantWrapper. Annotations enabled.
+     * @param submitter         the submitter of the variant
+     * @param variant           the Variant wrapper
+     */
+    public KnownVariantWrapper(
+            String submitter,
+            Variant variant)
+            throws VariantAnnotatorException,
+            CvaException
+    {
+        this(submitter, variant, true);
     }
 
     /**
      * Constructor for KnownVariantWrapper
-     * @param submitter     the user name for the submitter
-     * @param chromosome    the chromosome identifier, it will be normalized
-     * @param position      the genomic coordinate
-     * @param reference     the reference base/s
-     * @param alternate     the alternate base/s
+     * @param submitter         the user name for the submitter
+     * @param chromosome        the chromosome identifier, it will be normalized
+     * @param position          the genomic coordinate
+     * @param reference         the reference base/s
+     * @param alternate         the alternate base/s
+     * @param enableAnnotation  flag to perform annotation on the variant
+     * @throws VariantAnnotatorException            wrong annotation (this excceptions need to be managed...)
+     * @throws IllegalCvaConfigurationException     Wrong CVA settings
+     */
+    public KnownVariantWrapper(
+            String submitter,
+            String chromosome,
+            int position,
+            String reference,
+            String alternate,
+            Boolean enableAnnotation)
+            throws VariantAnnotatorException, CvaException{
+        this(submitter, new Variant(chromosome, position, reference, alternate), enableAnnotation);
+    }
+
+    /**
+     * Constructor for KnownVariantWrapper. Annotations enabled
+     * @param submitter         the user name for the submitter
+     * @param chromosome        the chromosome identifier, it will be normalized
+     * @param position          the genomic coordinate
+     * @param reference         the reference base/s
+     * @param alternate         the alternate base/s
      * @throws VariantAnnotatorException            wrong annotation (this excceptions need to be managed...)
      * @throws IllegalCvaConfigurationException     Wrong CVA settings
      */
@@ -123,7 +165,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
             String reference,
             String alternate)
             throws VariantAnnotatorException, CvaException{
-        this(submitter, new Variant(chromosome, position, reference, alternate));
+        this(submitter, chromosome, position, reference, alternate, true);
     }
 
     /**
