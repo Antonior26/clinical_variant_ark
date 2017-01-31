@@ -51,7 +51,7 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
     private MongoDataStoreManager mongoManager;
     private MongoDataStore db;
     private String collectionName;
-    private MongoDBCollection curatedVariantsCollection;
+    private MongoDBCollection knownVariantsCollection;
     private MongoCredentials credentials;
 
     @Deprecated
@@ -67,17 +67,17 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
         this.mongoManager = new MongoDataStoreManager(this.credentials.getDataStoreServerAddresses());
         this.db = mongoManager.get(credentials.getMongoDbName(), credentials.getMongoDBConfiguration());
         this.collectionName = cvaConfiguration.getStorageEngines().get(0).getOptions().get("collection.knownvariants");
-        this.curatedVariantsCollection = db.getCollection(collectionName);
+        this.knownVariantsCollection = db.getCollection(collectionName);
         NUMBER_INSTANCES.incrementAndGet();
     }
 
     @Override
     public QueryResult insert(KnownVariantWrapper curatedVariant, QueryOptions options) {
+
         // Creates a set of converters
         DocumentToKnownVariantConverter curatedVariantConverter = new DocumentToKnownVariantConverter();
         Document curatedVariantDocument = curatedVariantConverter.convertToStorageType(curatedVariant);
-        QueryResult result = this.curatedVariantsCollection.insert(curatedVariantDocument, options);
-
+        QueryResult result = this.knownVariantsCollection.insert(curatedVariantDocument, options);
         return result;
     }
 
@@ -120,10 +120,10 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
         if (options.containsKey(QueryOptions.TIMEOUT)
                 || options.containsKey(QueryOptions.LIMIT)
                 || !options.containsKey(QueryOptions.SORT)) {
-            FindIterable<Document> dbCursor = curatedVariantsCollection.nativeQuery().find(mongoQuery, projection, options);
+            FindIterable<Document> dbCursor = knownVariantsCollection.nativeQuery().find(mongoQuery, projection, options);
             return new VariantMongoDBIterator(dbCursor, converter);
         } else {
-            return VariantMongoDBIterator.persistentIterator(curatedVariantsCollection, mongoQuery, projection, options, converter);
+            return VariantMongoDBIterator.persistentIterator(knownVariantsCollection, mongoQuery, projection, options, converter);
         }
     }
 

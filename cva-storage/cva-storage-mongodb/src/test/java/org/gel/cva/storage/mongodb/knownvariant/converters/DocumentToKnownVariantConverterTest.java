@@ -1,6 +1,7 @@
 package org.gel.cva.storage.mongodb.knownvariant.converters;
 
 import org.bson.Document;
+import org.gel.cva.storage.core.exceptions.CvaException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.cva.storage.core.helpers.CvaDateFormatter;
 import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariantWrapper;
@@ -168,7 +169,7 @@ public class DocumentToKnownVariantConverterTest {
 
     @Test
     public void convertToStorageTypeTest()
-            throws VariantAnnotatorException, IOException, IllegalCvaConfigurationException{
+            throws VariantAnnotatorException, CvaException{
         // Prepares a known variant
         Variant variant = new Variant(this.chromosome, this.position, this.reference, this.alternate);
         KnownVariantWrapper knownVariantWrapper = new KnownVariantWrapper(this.submitter, variant);

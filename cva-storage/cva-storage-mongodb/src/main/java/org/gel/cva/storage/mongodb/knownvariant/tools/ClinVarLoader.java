@@ -2,6 +2,7 @@ package org.gel.cva.storage.mongodb.knownvariant.tools;
 
 import com.mongodb.MongoWriteException;
 import org.gel.cva.storage.core.config.CvaConfiguration;
+import org.gel.cva.storage.core.exceptions.CvaException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaCredentialsException;
 import org.gel.models.cva.avro.AlleleOrigin;
@@ -114,10 +115,9 @@ public class ClinVarLoader {
 
 
     public static void main(String [] args) throws FileNotFoundException,
-            IllegalCvaCredentialsException,
+            CvaException,
             UnknownHostException,
-            VariantAnnotatorException,
-            IllegalCvaConfigurationException
+            VariantAnnotatorException
     {
 
         // Creates db adaptor

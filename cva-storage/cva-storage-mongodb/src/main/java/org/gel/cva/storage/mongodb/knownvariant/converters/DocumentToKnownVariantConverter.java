@@ -17,6 +17,7 @@
 package org.gel.cva.storage.mongodb.knownvariant.converters;
 
 import org.bson.Document;
+import org.gel.cva.storage.core.exceptions.CvaException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariantWrapper;
 import org.gel.models.cva.avro.Comment;
@@ -76,7 +77,7 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
         catch (VariantAnnotatorException e) {
             //TODO: add this exception to the signature and raise appropriately
         }
-        catch (IllegalCvaConfigurationException e) {
+        catch (CvaException e) {
             //TODO: add this exception to the signature and raise appropriately
         }
         // Converts list of evidences
