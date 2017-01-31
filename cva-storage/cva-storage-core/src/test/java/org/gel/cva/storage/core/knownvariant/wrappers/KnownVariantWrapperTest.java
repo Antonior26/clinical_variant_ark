@@ -15,6 +15,7 @@
  */
 package org.gel.cva.storage.core.knownvariant.wrappers;
 
+import org.gel.cva.storage.core.exceptions.CvaException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaArgumentException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.models.cva.avro.*;
@@ -60,7 +61,7 @@ public class KnownVariantWrapperTest {
                     reference,
                     alternate);
         }
-        catch (IllegalCvaConfigurationException ex) {
+        catch (CvaException ex) {
             assertTrue(false);  // this should never raise
         }
         catch (VariantAnnotatorException ex) {

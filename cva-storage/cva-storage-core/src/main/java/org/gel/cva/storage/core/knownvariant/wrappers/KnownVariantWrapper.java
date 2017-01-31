@@ -18,6 +18,7 @@ package org.gel.cva.storage.core.knownvariant.wrappers;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.gel.cva.storage.core.config.CvaConfiguration;
+import org.gel.cva.storage.core.exceptions.CvaException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaArgumentException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.cva.storage.core.helpers.AvroHelper;
@@ -26,6 +27,7 @@ import org.gel.models.cva.avro.*;
 import org.gel.models.report.avro.EthnicCategory;
 import org.gel.models.report.avro.ReportedModeOfInheritance;
 import org.opencb.biodata.models.variant.Variant;
+import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.biodata.models.variant.avro.ConsequenceType;
 import org.opencb.biodata.models.variant.avro.VariantAnnotation;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
@@ -46,6 +48,16 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
     private KnownVariant impl;
     private Variant variant;
     private List<String> transcripts = null;
+    private static CellBaseDirectVariantAnnotator cellBaseDirectVariantAnnotator;
+    private static VariantNormalizer variantNormalizer;
+
+    {
+        // Initializes static elements to annotate and normalize
+        KnownVariantWrapper.cellBaseDirectVariantAnnotator =
+                CvaConfiguration.getCellBaseDirectVariantAnnotator();
+        KnownVariantWrapper.variantNormalizer = new VariantNormalizer(
+                true, true, true);
+    }
 
     /**
      * Constructor from the avro object
@@ -68,7 +80,18 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
     public KnownVariantWrapper(
             String submitter,
             Variant variant)
-            throws VariantAnnotatorException, IllegalCvaConfigurationException{
+            throws VariantAnnotatorException,
+            CvaException
+    {
+        // normalizes the variant before storing it
+        List<Variant> variants = KnownVariantWrapper.variantNormalizer.apply(Collections.singletonList(variant));
+        if (variants == null || variants.size() == 0) {
+            throw new CvaException("Unexpected error normalizing variants.");
+        }
+        if (variants.size() > 1) {
+            throw new IllegalCvaArgumentException("Cannot register a multi-allelic variant in CVA. " +
+                    "You need to split the variant and register each of them separately.");
+        }
         // stores a reference to the OpenCB variant
         this.variant = variant;
         // creates the underlying KnownVariantAvro model with default values
@@ -99,7 +122,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
             int position,
             String reference,
             String alternate)
-            throws VariantAnnotatorException, IllegalCvaConfigurationException{
+            throws VariantAnnotatorException, CvaException{
         this(submitter, new Variant(chromosome, position, reference, alternate));
     }
 
@@ -616,11 +639,10 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      */
     private void annotateVariant() throws VariantAnnotatorException, IllegalCvaConfigurationException {
 
-        CellBaseDirectVariantAnnotator cellBaseDirectVariantAnnotator =
-                CvaConfiguration.getCellBaseDirectVariantAnnotator();
         List<VariantAnnotation> variantAnnotations = null;
         try {
-            variantAnnotations = cellBaseDirectVariantAnnotator.annotate(Collections.singletonList(this.getVariant()));
+            variantAnnotations = KnownVariantWrapper.cellBaseDirectVariantAnnotator.annotate(
+                    Collections.singletonList(this.getVariant()));
         }
         catch (Exception e) {
             //TODO: manage these errors, write a file with conflicting variants???
