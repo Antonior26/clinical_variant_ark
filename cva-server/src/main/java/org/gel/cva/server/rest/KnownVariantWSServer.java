@@ -94,9 +94,8 @@ public class KnownVariantWSServer extends CvaWSServer {
     }
     */
 
-    @POST
+    @GET
     @Path("/insert")
-    @Consumes(MediaType.APPLICATION_JSON)
     @ApiOperation(value = "Insert a known variant", position = 1,
             notes = "Inserts a known variant. <br>"
                     + "Required values: [chromosome, position, reference, alternate]", response = KnownVariantWrapper.class)
@@ -104,8 +103,8 @@ public class KnownVariantWSServer extends CvaWSServer {
             @ApiParam(value = "submitter") @QueryParam("submitter") String submitter,
             @ApiParam(value = "chromosome") @QueryParam("chromosome") String chromosome,
             @ApiParam(value = "position (1-based position)", required = true) @QueryParam("position") Integer position,
-            @ApiParam(value = "reference", required = true) String reference,
-            @ApiParam(value = "alternate", required = true) String alternate) {
+            @ApiParam(value = "reference", required = true) @QueryParam("reference") String reference,
+            @ApiParam(value = "alternate", required = true) @QueryParam("alternate") String alternate) {
 
         try {
             KnownVariantWrapper result = knownVariantManager.createKnownVariant(
