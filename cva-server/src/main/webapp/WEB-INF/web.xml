@@ -62,7 +62,7 @@
     </filter-mapping>
 
     <servlet-mapping>
-        <servlet-name>OpenCGA</servlet-name>
+        <servlet-name>CVA</servlet-name>
         <url-pattern>/webservices/rest/*</url-pattern>
     </servlet-mapping>
 
