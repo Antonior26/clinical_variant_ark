@@ -49,33 +49,6 @@ public abstract class AbstractStorageServer {
 
     protected static Logger logger = LoggerFactory.getLogger("org.opencb.opencga.server.AbstractStorageServer");
 
-
-    public AbstractStorageServer() throws IllegalCvaConfigurationException {
-        initDefaultConfigurationFiles();
-    }
-
-    public AbstractStorageServer(int port, String defaultStorageEngine) throws IllegalCvaConfigurationException {
-        initDefaultConfigurationFiles();
-
-        this.port = port;
-        if (StringUtils.isNotEmpty(defaultStorageEngine)) {
-            this.defaultStorageEngine = defaultStorageEngine;
-        } else {
-            this.defaultStorageEngine = storageConfiguration.getDefaultStorageEngineId();
-        }
-    }
-
-    public AbstractStorageServer(Path configDir) throws IllegalCvaConfigurationException {
-        this.configDir = configDir;
-        initConfigurationFiles(configDir);
-
-        this.port = 0;
-
-        if (storageConfiguration != null) {
-            this.defaultStorageEngine = storageConfiguration.getDefaultStorageEngineId();
-        }
-    }
-
     public AbstractStorageServer(CvaConfiguration configuration, StorageConfiguration storageConfiguration) {
         logger.info("Loading configuration files");
         this.configuration = configuration;

@@ -20,16 +20,13 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.gel.cva.storage.core.config.CvaConfiguration;
-import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
-import org.gel.cva.server.rest.AdminRestWebService;
 import org.opencb.opencga.storage.core.config.StorageConfiguration;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.DispatcherType;
-import java.nio.file.Path;
 import java.util.EnumSet;
 
 /**
@@ -41,35 +38,10 @@ public class RestServer extends AbstractStorageServer {
 
     private boolean exit;
 
-    public RestServer() throws IllegalCvaConfigurationException {
-    }
-
-    public RestServer(int port, String defaultStorageEngine)
-            throws IllegalCvaConfigurationException {
-
-        super(port, defaultStorageEngine);
-        init();
-    }
-
-    public RestServer(Path configDir)
-            throws IllegalCvaConfigurationException {
-
-        super(configDir);
-        init();
-    }
-
     public RestServer(CvaConfiguration configuration, StorageConfiguration storageConfiguration) {
         super(configuration, storageConfiguration);
 
         init();
-    }
-
-    @Deprecated
-    public RestServer(StorageConfiguration storageConfiguration) throws IllegalCvaConfigurationException {
-        super(storageConfiguration.getServer().getRest(), storageConfiguration.getDefaultStorageEngineId());
-        this.storageConfiguration = storageConfiguration;
-
-        logger = LoggerFactory.getLogger(this.getClass());
     }
 
     private void init() {
@@ -131,9 +103,6 @@ public class RestServer extends AbstractStorageServer {
                 e.printStackTrace();
             }
         }).start();
-
-        // AdminWSServer server needs a reference to this class to cll to .stop()
-        AdminRestWebService.setServer(this);
     }
 
     @Override
