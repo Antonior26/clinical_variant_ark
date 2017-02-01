@@ -2,3 +2,4 @@
 .idea
 cva-storage/cva-storage-core/target
 cva-storage/cva-storage-mongodb/target
+cva-server/target

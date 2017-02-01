@@ -6,12 +6,12 @@
     <parent>
         <groupId>org.gel.cva</groupId>
         <artifactId>cva-storage</artifactId>
-        <version>1.0</version>
+        <version>0.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>cva-storage-mongodb</artifactId>
-    <version>1.0</version>
+    <version>${cva.version}</version>
     <packaging>jar</packaging>
 
     <dependencies>
@@ -19,8 +19,7 @@
         <dependency>
             <groupId>org.gel.cva</groupId>
             <artifactId>cva-storage-core</artifactId>
-            <version>1.0</version>
+            <version>${cva.version}</version>
         </dependency>
     </dependencies>
-
 </project>

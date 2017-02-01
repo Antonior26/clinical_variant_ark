@@ -9,7 +9,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Maven: org.gel.models:models:1.0.0-SNAPSHOT" level="project" />
-    <orderEntry type="library" name="Maven: org.opencb.biodata:biodata-models:0.9.0-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.opencb.biodata:biodata-models:1.0.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: org.opencb.ga4gh:ga4gh:0.6.0a5" level="project" />
     <orderEntry type="library" name="Maven: org.apache.avro:avro-ipc:1.7.7" level="project" />
     <orderEntry type="library" name="Maven: org.mortbay.jetty:jetty:6.1.26" level="project" />

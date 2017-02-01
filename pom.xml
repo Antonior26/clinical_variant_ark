@@ -6,17 +6,19 @@
 
     <groupId>org.gel.cva</groupId>
     <artifactId>cva</artifactId>
-    <version>1.0</version>
+    <version>0.1</version>
     <packaging>pom</packaging>
 
     <modules>
         <module>cva-storage</module>
+        <module>cva-server</module>
         <!--<module>cva-storage/cva-storage-core</module>-->
         <!--<module>cva-storage/cva-storage-mongodb</module>-->
     </modules>
 
     <properties>
-        <ntbcvariantbox.version>1.0</ntbcvariantbox.version>
+        <cva.version>0.1</cva.version>
+        <cva.war.name>cva-${cva.version}</cva.war.name>
         <opencga.version>1.0.0-rc3</opencga.version>
         <java.version>1.8</java.version>
         <biodata.version>0.9.0-SNAPSHOT</biodata.version>
