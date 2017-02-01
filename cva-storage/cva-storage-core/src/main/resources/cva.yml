@@ -51,3 +51,10 @@ clinVar:
   password:
   # %s will be replaced with the organism.assembly value
   assemblyFolder: pub/clinvar/vcf_%s
+
+server:
+  rest:
+    port: 8080
+    logFile: null
+    defaultLimit: 2000
+    maxLimit: 5000

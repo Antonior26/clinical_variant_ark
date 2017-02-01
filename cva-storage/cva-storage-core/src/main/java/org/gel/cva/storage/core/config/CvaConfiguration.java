@@ -34,6 +34,7 @@ public class CvaConfiguration {
     private List<StorageEngineConfiguration> storageEngines;
     private OrganismConfiguration organism;
     private ClinVarConfiguration clinVar;
+    private ServerConfiguration server;
 
     private static CvaConfiguration instance = null;
     private static final String CONFIG_FILE = "/cva.yml";
@@ -273,4 +274,11 @@ public class CvaConfiguration {
         this.tempFolder = tempFolder;
     }
 
+    public ServerConfiguration getServer() {
+        return server;
+    }
+
+    public void setServer(ServerConfiguration server) {
+        this.server = server;
+    }
 }
