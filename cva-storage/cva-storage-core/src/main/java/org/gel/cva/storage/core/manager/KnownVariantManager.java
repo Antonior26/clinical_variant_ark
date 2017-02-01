@@ -56,7 +56,8 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
      * @param alternate     the alternate bases
      * @return
      */
-    public String createKnownVariant(
+    @Override
+    public KnownVariantWrapper createKnownVariant(
             String submitter,
             String chromosome,
             Integer position,
@@ -68,84 +69,28 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
                 new KnownVariantWrapper(submitter, chromosome, position, reference, alternate);
         // Inserts the variants in mongoDB
         this.knownVariantDBAdaptor.insert(knownVariantWrapper, null);
-        return null;
+        return knownVariantWrapper;
     }
 
     /**
-     * Retrieves the known variant corresponding to knownVariantId, adds the requested curation and updates the known
-     * variant. Returns true if the update was correct.
-     * If the knownVariantId does not exist it returns false.
-     * @param knownVariantId
-     * @param curator
-     * @param phenotype
-     * @param modeOfInheritance
-     * @param transcript
-     * @param curationClassification
-     * @param manualCurationConfidence
-     * @param consistencyStatus
-     * @param penetrance
-     * @param variableExpressivity
+     * Retrieves a known variant from CVA.
+     * Returns null if the variant does not exist.
+     * @param chromosome    the chromosome
+     * @param position      the position
+     * @param reference     the reference bases
+     * @param alternate     the alternate bases
      * @return
-     * @throws IllegalCvaArgumentException
      */
-    public Boolean addCuration(
-            String knownVariantId,
-            String curator,
-            String phenotype,
-            ReportedModeOfInheritance modeOfInheritance,
-            String transcript,
-            CurationClassification curationClassification,
-            ManualCurationConfidence manualCurationConfidence,
-            ConsistencyStatus consistencyStatus,
-            Float penetrance,
-            Boolean variableExpressivity) {
-        throw new NotImplementedException();
-    }
+    @Override
+    public KnownVariantWrapper findKnownVariant(
+            String chromosome,
+            Integer position,
+            String reference,
+            String alternate) throws CvaException {
 
-    /**
-     * Retrieves the known variant corresponding to knownVariantId, adds the requested evidence and updates the known
-     * variant. Returns true if the update was correct.
-     * If the knownVariantId does not exist it returns false.
-     * @param knownVariantId
-     * @param submitter
-     * @param sourceName
-     * @param sourceType
-     * @param sourceVersion
-     * @param sourceUrl
-     * @param sourceId
-     * @param alleleOrigin
-     * @param heritablePhenotypes
-     * @param transcript
-     * @param evidencePathogenicity
-     * @param evidenceBenignity
-     * @param pubmedId
-     * @param study
-     * @param numberOfIndividuals
-     * @param ethnicCategory
-     * @param description
-     * @return
-     * @throws IllegalCvaArgumentException
-     */
-    public Boolean addEvidence(
-            String knownVariantId,
-            String submitter,
-            String sourceName,
-            SourceType sourceType,
-            String sourceVersion,
-            String sourceUrl,
-            String sourceId,
-            AlleleOrigin alleleOrigin,
-            List<HeritablePhenotype> heritablePhenotypes,
-            String transcript,
-            EvidencePathogenicity evidencePathogenicity,
-            EvidenceBenignity evidenceBenignity,
-            String pubmedId,
-            String study,
-            Integer numberOfIndividuals,
-            EthnicCategory ethnicCategory,
-            String description)
-            throws IllegalCvaArgumentException {
-        throw new NotImplementedException();
+        // Search for the variant in mongoDB
+        KnownVariantWrapper knownVariantWrapper = this.knownVariantDBAdaptor.find(chromosome, position, reference, alternate);
+        return knownVariantWrapper;
     }
 
     /**
@@ -179,7 +124,19 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
             ConsistencyStatus consistencyStatus,
             Float penetrance,
             Boolean variableExpressivity) throws CvaException {
-        throw new NotImplementedException();
+
+        KnownVariantWrapper knownVariantWrapper =
+                this.knownVariantDBAdaptor.find(chromosome, position, reference, alternate);
+        if (knownVariantWrapper == null) {
+            throw new CvaException("Cannot add a curation to a non registered variant");
+        }
+        knownVariantWrapper.addCuration(curator, phenotype, modeOfInheritance, transcript,
+                curationClassification, manualCurationConfidence, consistencyStatus, penetrance, variableExpressivity);
+        Boolean isUpdateCorrect = this.knownVariantDBAdaptor.update(knownVariantWrapper);
+        if (! isUpdateCorrect) {
+            throw new CvaException("Adding a curation failed");
+        }
+        return knownVariantWrapper;
     }
 
     /**
@@ -226,7 +183,20 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
             Integer numberOfIndividuals,
             EthnicCategory ethnicCategory,
             String description
-    ) throws IllegalCvaArgumentException {
-        throw new NotImplementedException();
+    ) throws CvaException {
+
+        KnownVariantWrapper knownVariantWrapper =
+                this.knownVariantDBAdaptor.find(chromosome, position, reference, alternate);
+        if (knownVariantWrapper == null) {
+            throw new CvaException("Cannot add a curation to a non registered variant");
+        }
+        knownVariantWrapper.addEvidence(submitter, sourceName, sourceType, sourceVersion, sourceUrl, sourceId,
+                alleleOrigin, heritablePhenotypes, transcript, evidencePathogenicity, evidenceBenignity,
+                pubmedId, study, numberOfIndividuals, ethnicCategory, description);
+        Boolean isUpdateCorrect = this.knownVariantDBAdaptor.update(knownVariantWrapper);
+        if (! isUpdateCorrect) {
+            throw new CvaException("Adding an evidence failed");
+        }
+        return knownVariantWrapper;
     }
 }
