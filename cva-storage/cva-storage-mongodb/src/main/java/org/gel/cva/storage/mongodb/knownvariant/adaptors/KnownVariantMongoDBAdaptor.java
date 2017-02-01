@@ -17,19 +17,28 @@
 package org.gel.cva.storage.mongodb.knownvariant.adaptors;
 
 
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.result.UpdateResult;
 import org.bson.Document;
 import org.gel.cva.storage.core.config.CvaConfiguration;
+import org.gel.cva.storage.core.exceptions.CvaException;
+import org.gel.cva.storage.core.exceptions.IllegalCvaArgumentException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaCredentialsException;
 import org.gel.cva.storage.mongodb.knownvariant.converters.DocumentToKnownVariantConverter;
 import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariantWrapper;
+import org.gel.models.cva.avro.ConsistencyStatus;
+import org.gel.models.cva.avro.CurationClassification;
+import org.gel.models.cva.avro.ManualCurationConfidence;
+import org.gel.models.report.avro.ReportedModeOfInheritance;
 import org.opencb.commons.datastore.core.QueryOptions;
-import org.opencb.commons.datastore.core.QueryResult;
-import org.opencb.commons.datastore.mongodb.MongoDBCollection;
 import org.opencb.commons.datastore.mongodb.MongoDataStore;
 import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
 import org.opencb.commons.io.DataWriter;
 import org.gel.cva.storage.core.knownvariant.adaptors.KnownVariantDBAdaptor;
+import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +47,7 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import java.io.IOException;
 import java.util.*;
 
+import static com.mongodb.client.model.Filters.eq;
 import static org.opencb.opencga.storage.mongodb.variant.adaptors.VariantMongoDBAdaptor.NUMBER_INSTANCES;
 
 /**
@@ -49,44 +59,124 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
 
     private boolean closeConnection;
     private MongoDataStoreManager mongoManager;
-    private MongoDataStore db;
     private String collectionName;
-    private MongoDBCollection knownVariantsCollection;
+    private MongoCollection<Document> knownVariantsCollection;
     private MongoCredentials credentials;
-
-    @Deprecated
-    private DataWriter dataWriter;
-
+    private DocumentToKnownVariantConverter knownVariantConverter = new DocumentToKnownVariantConverter();
     protected static Logger logger = LoggerFactory.getLogger(KnownVariantMongoDBAdaptor.class);
 
+    /**
+     * Constructor using the configuration object
+     * @param cvaConfiguration
+     * @throws IllegalCvaConfigurationException
+     * @throws IllegalCvaCredentialsException
+     */
     public KnownVariantMongoDBAdaptor(CvaConfiguration cvaConfiguration)
             throws IllegalCvaConfigurationException, IllegalCvaCredentialsException {
         // Gets mongo credentials
         this.credentials = CvaConfiguration.getMongoCredentials();
         this.closeConnection = false;
         this.mongoManager = new MongoDataStoreManager(this.credentials.getDataStoreServerAddresses());
-        this.db = mongoManager.get(credentials.getMongoDbName(), credentials.getMongoDBConfiguration());
-        this.collectionName = cvaConfiguration.getStorageEngines().get(0).getOptions().get("collection.knownvariants");
-        this.knownVariantsCollection = db.getCollection(collectionName);
+        this.collectionName = cvaConfiguration.getDefaultStorageEngine().getOptions().get("collection.knownvariants");
+        //this.knownVariantsCollection = db.getCollection(collectionName);
         NUMBER_INSTANCES.incrementAndGet();
+
+        MongoClient mongoClient = CvaConfiguration.getMongoClient();
+        MongoDatabase database = mongoClient.getDatabase(credentials.getMongoDbName());
+        this.knownVariantsCollection = database.getCollection(this.collectionName);
     }
 
+    /**
+     * This method inserts a single KnownVariant in the database. If the variant already exists... throw error?
+     * @param knownVariant      List of curated variants in OpenCB data model to be inserted
+     * @param options           Query modifiers, accepted values are: include, exclude, limit, skip, sort and count
+     * @return                  The known variant _id
+     */
     @Override
-    public QueryResult insert(KnownVariantWrapper curatedVariant, QueryOptions options) {
+    public String insert(KnownVariantWrapper knownVariant, QueryOptions options) {
 
         // Creates a set of converters
-        DocumentToKnownVariantConverter curatedVariantConverter = new DocumentToKnownVariantConverter();
-        Document curatedVariantDocument = curatedVariantConverter.convertToStorageType(curatedVariant);
-        QueryResult result = this.knownVariantsCollection.insert(curatedVariantDocument, options);
-        return result;
+
+        Document curatedVariantDocument = this.knownVariantConverter.convertToStorageType(knownVariant);
+        this.knownVariantsCollection.insertOne(curatedVariantDocument);
+        return (String) curatedVariantDocument.get("_id");
     }
 
+    /**
+     * This method inserts a list of KnownVariants in the database. If the variant already exists... throw error?
+     * @param knownVariants     List of curated variants in OpenCB data model to be inserted
+     * @param options           Query modifiers, accepted values are: include, exclude, limit, skip, sort and count
+     * @return                  The list of known variant _id
+     */
     @Override
-    public QueryResult insert(List<KnownVariantWrapper> curatedVariants, QueryOptions options) {
+    public List<String> insert(List<KnownVariantWrapper> knownVariants, QueryOptions options) {
         //TODO: implement the insertion in batches of variants
-        throw new NotImplementedException();
+        List<String> results = new LinkedList<>();
+        for (KnownVariantWrapper knownVariantWrapper : knownVariants) {
+            String id = this.insert(knownVariantWrapper, options);
+            results.add(id);
+        }
+        return results;
     }
 
+    /**
+     * Retrieves a KnownVariant by the basic variant attributes.
+     * Normalization is applied to these attributes, so searching for chr19 and 19 returns the same results.
+     * Also redundant base trimming and left alignment is applied.
+     * @param chromosome        The chromosome
+     * @param position          The position
+     * @param reference         The reference base/s
+     * @param alternate         The alternate base/s
+     * @return                  The known variant found if any, otherwise returns null
+     * @throws CvaException
+     */
+    public KnownVariantWrapper find(String chromosome, Integer position, String reference, String alternate)
+            throws CvaException {
+
+        // Creates a new variant and serializes to Bson for two reasons:
+        //  * get the variant id to search the database
+        //  * consider variant normalization in search
+        KnownVariantWrapper variantToSearch = null;
+        try {
+            variantToSearch = new KnownVariantWrapper(
+                    "find",
+                    chromosome,
+                    position,
+                    reference,
+                    alternate,
+                    false
+            );
+        }
+        catch (VariantAnnotatorException ex) {
+            // this exception will be never thrown as we are not annotating
+        }
+        Document variantToSearchDoc = this.knownVariantConverter.convertToStorageType(variantToSearch);
+        String variantId = (String) variantToSearchDoc.get("_id");
+        // Search in MongoDB
+        Document foundDocument = this.knownVariantsCollection.find(eq("_id", variantId)).first();
+        KnownVariantWrapper foundKnownVariant = null;
+        if (foundDocument != null) {
+            foundKnownVariant = this.knownVariantConverter.convertToDataModelType(foundDocument);
+        }
+        return foundKnownVariant;
+    }
+
+    /**
+     * Updates a known variant and returns a flag indicating if the update was correct.
+     * @param knownVariantWrapper       The entity to update in the known variants collection
+     * @return                          Boolean indicating if the update was correct
+     * @throws CvaException
+     */
+    @Override
+    public Boolean update(KnownVariantWrapper knownVariantWrapper)
+            throws CvaException {
+
+        // Updates the database
+        Document knownVariantWrapperDoc = this.knownVariantConverter.convertToStorageType(knownVariantWrapper);
+        UpdateResult updateResult = this.knownVariantsCollection.updateOne(eq("_id", (String)knownVariantWrapperDoc.get("_id")),
+                new Document("$set", knownVariantWrapperDoc));
+        return updateResult.getModifiedCount() == 1;
+    }
 
     @Override
     public void close() throws IOException {

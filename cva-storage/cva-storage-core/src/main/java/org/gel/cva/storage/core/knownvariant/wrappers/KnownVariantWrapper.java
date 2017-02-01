@@ -323,8 +323,10 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
         evidences.add(evidenceEntry);
         impl.setEvidences(evidences);
         // Update the consistency status for all affected curations
-        for (HeritablePhenotype heritablePhenotype: heritablePhenotypes) {
-            this.updateConsistencyStatus(heritablePhenotype, transcript);
+        if (heritablePhenotypes != null) {
+            for (HeritablePhenotype heritablePhenotype : heritablePhenotypes) {
+                this.updateConsistencyStatus(heritablePhenotype, transcript);
+            }
         }
     }
 

@@ -1,50 +1,19 @@
 package org.gel.cva.storage.core.manager;
 
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPFile;
-import org.gel.cva.storage.core.config.CvaConfiguration;
 import org.gel.cva.storage.core.exceptions.CvaException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaArgumentException;
-import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
-import org.gel.cva.storage.core.knownvariant.adaptors.KnownVariantDBAdaptor;
 import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariantWrapper;
 import org.gel.models.cva.avro.*;
 import org.gel.models.report.avro.EthnicCategory;
 import org.gel.models.report.avro.ReportedModeOfInheritance;
-import org.opencb.commons.datastore.core.QueryResult;
-import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Created by priesgo on 19/01/17.
+ * Created by priesgo on 31/01/17.
  */
-public class KnownVariantManager extends CvaManager implements IKnownVariantManager {
-
-    private KnownVariantDBAdaptor knownVariantDBAdaptor;
-
-    public KnownVariantManager(CvaConfiguration cvaConfiguration)
-            throws IllegalCvaConfigurationException, IllegalOpenCGACredentialsException,
-            ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException,
-            InvocationTargetException {
-        super(cvaConfiguration);
-        String adaptorImplClass = cvaConfiguration.getStorageEngines().get(0).getOptions().get("adaptor.knownvariants");
-        Class<?> clazz = Class.forName(adaptorImplClass);
-        Constructor<?> ctor = clazz.getConstructor(CvaConfiguration.class);
-        this.knownVariantDBAdaptor = (KnownVariantDBAdaptor)ctor.newInstance(new Object[] { cvaConfiguration });
-    }
+public interface IKnownVariantManager {
 
     /**
      * Registers a known variant in CVA, if the variant already exists it does nothing.
@@ -56,20 +25,13 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
      * @param alternate     the alternate bases
      * @return
      */
-    public String createKnownVariant(
+    String createKnownVariant(
             String submitter,
             String chromosome,
             Integer position,
             String reference,
-            String alternate) throws VariantAnnotatorException, CvaException {
-
-        // Creates the variant, normalize it and annotate
-        KnownVariantWrapper knownVariantWrapper =
-                new KnownVariantWrapper(submitter, chromosome, position, reference, alternate);
-        // Inserts the variants in mongoDB
-        this.knownVariantDBAdaptor.insert(knownVariantWrapper, null);
-        return null;
-    }
+            String alternate
+    ) throws VariantAnnotatorException, CvaException;
 
     /**
      * Retrieves the known variant corresponding to knownVariantId, adds the requested curation and updates the known
@@ -88,7 +50,7 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
      * @return
      * @throws IllegalCvaArgumentException
      */
-    public Boolean addCuration(
+    Boolean addCuration(
             String knownVariantId,
             String curator,
             String phenotype,
@@ -98,9 +60,7 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
             ManualCurationConfidence manualCurationConfidence,
             ConsistencyStatus consistencyStatus,
             Float penetrance,
-            Boolean variableExpressivity) {
-        throw new NotImplementedException();
-    }
+            Boolean variableExpressivity);
 
     /**
      * Retrieves the known variant corresponding to knownVariantId, adds the requested evidence and updates the known
@@ -126,7 +86,7 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
      * @return
      * @throws IllegalCvaArgumentException
      */
-    public Boolean addEvidence(
+    Boolean addEvidence(
             String knownVariantId,
             String submitter,
             String sourceName,
@@ -144,9 +104,7 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
             Integer numberOfIndividuals,
             EthnicCategory ethnicCategory,
             String description)
-            throws IllegalCvaArgumentException {
-        throw new NotImplementedException();
-    }
+            throws IllegalCvaArgumentException;
 
     /**
      * Adds a curation to an existing variant.
@@ -167,8 +125,7 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
      * @return                              the updated KnownVariant
      * @throws CvaException                 when the variant does not exist
      */
-    @Override
-    public KnownVariantWrapper addCuration(
+    KnownVariantWrapper addCuration(
             String chromosome, Integer position, String reference, String alternate,
             String curator,
             String phenotype,
@@ -178,9 +135,7 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
             ManualCurationConfidence manualCurationConfidence,
             ConsistencyStatus consistencyStatus,
             Float penetrance,
-            Boolean variableExpressivity) throws CvaException {
-        throw new NotImplementedException();
-    }
+            Boolean variableExpressivity) throws CvaException;
 
     /**
      *
@@ -207,8 +162,7 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
      * @return
      * @throws IllegalCvaArgumentException
      */
-    @Override
-    public KnownVariantWrapper addEvidence(
+    KnownVariantWrapper addEvidence(
             String chromosome, Integer position, String reference, String alternate,
             String submitter,
             String sourceName,
@@ -226,7 +180,5 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
             Integer numberOfIndividuals,
             EthnicCategory ethnicCategory,
             String description
-    ) throws IllegalCvaArgumentException {
-        throw new NotImplementedException();
-    }
+    ) throws IllegalCvaArgumentException;
 }

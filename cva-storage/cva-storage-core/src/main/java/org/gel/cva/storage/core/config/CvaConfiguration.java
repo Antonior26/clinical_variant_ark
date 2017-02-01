@@ -2,6 +2,8 @@ package org.gel.cva.storage.core.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaCredentialsException;
 import org.gel.cva.storage.core.helpers.CvaDateFormatter;
@@ -134,6 +136,21 @@ public class CvaConfiguration {
             throw new IllegalCvaCredentialsException(ex.getMessage());
         }
         return mongoCredentials;
+    }
+
+    /**
+     *
+     * @return
+     * @throws IllegalCvaConfigurationException
+     * @throws IllegalCvaCredentialsException
+     */
+    public static MongoClient getMongoClient()
+            throws IllegalCvaConfigurationException, IllegalCvaCredentialsException {
+
+        DatabaseCredentials databaseCredentials = CvaConfiguration.getDefaultStorageEngine().getDatabase();
+        databaseCredentials.getHosts().get(0);
+        MongoClientURI connectionString = new MongoClientURI("mongodb://" + databaseCredentials.getHosts().get(0));
+        return new MongoClient(connectionString);
     }
 
     /**
