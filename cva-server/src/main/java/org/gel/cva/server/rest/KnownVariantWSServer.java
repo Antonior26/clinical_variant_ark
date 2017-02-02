@@ -17,18 +17,11 @@
 package org.gel.cva.server.rest;
 
 import io.swagger.annotations.*;
-import org.apache.commons.lang3.StringUtils;
 import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariantWrapper;
 import org.gel.models.cva.avro.*;
 import org.gel.models.report.avro.EthnicCategory;
 import org.gel.models.report.avro.ReportedModeOfInheritance;
-import org.opencb.commons.datastore.core.QueryOptions;
 import org.opencb.commons.datastore.core.QueryResult;
-import org.opencb.opencga.catalog.db.api.JobDBAdaptor;
-import org.opencb.opencga.catalog.exceptions.CatalogException;
-import org.opencb.opencga.catalog.managers.JobManager;
-import org.opencb.opencga.catalog.models.File;
-import org.opencb.opencga.catalog.models.Job;
 import org.opencb.opencga.core.exception.VersionException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -40,13 +33,11 @@ import javax.ws.rs.core.UriInfo;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 @Path("/{version}/variants")
 @Produces(MediaType.APPLICATION_JSON)
 @Api(value = "Known variants", position = 1, description = "Methods for working with 'variants' endpoint")
 public class KnownVariantWSServer extends CvaWSServer {
-
 
     public KnownVariantWSServer(@Context UriInfo uriInfo, @Context HttpServletRequest httpServletRequest) throws IOException, VersionException {
         super(uriInfo, httpServletRequest);
@@ -80,7 +71,18 @@ public class KnownVariantWSServer extends CvaWSServer {
                     reference,
                     alternate
             );
-            return createOkResponse(result);
+            List<KnownVariant> results = new LinkedList<>();
+            results.add(result.getImpl());
+            QueryResult queryResult = new QueryResult<KnownVariant>(
+                    "id",
+                    0,
+                    1,
+                    1l,
+                    "",
+                    "",
+                    results
+            );
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -140,7 +142,18 @@ public class KnownVariantWSServer extends CvaWSServer {
                     penetrance,
                     variableExpressivity
             );
-            return createOkResponse(result);
+            List<KnownVariant> results = new LinkedList<>();
+            results.add(result.getImpl());
+            QueryResult queryResult = new QueryResult<KnownVariant>(
+                    "id",
+                    0,
+                    1,
+                    1l,
+                    "",
+                    "",
+                    results
+            );
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -225,7 +238,18 @@ public class KnownVariantWSServer extends CvaWSServer {
                     ethnicCategory,
                     description
             );
-            return createOkResponse(result);
+            List<KnownVariant> results = new LinkedList<>();
+            results.add(result.getImpl());
+            QueryResult queryResult = new QueryResult<KnownVariant>(
+                    "id",
+                    0,
+                    1,
+                    1l,
+                    "",
+                    "",
+                    results
+            );
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
@@ -257,7 +281,18 @@ public class KnownVariantWSServer extends CvaWSServer {
                     reference,
                     alternate
             );
-            return createOkResponse(result);
+            List<KnownVariant> results = new LinkedList<>();
+            results.add(result.getImpl());
+            QueryResult queryResult = new QueryResult<KnownVariant>(
+                    "id",
+                    0,
+                    1,
+                    1l,
+                    "",
+                    "",
+                    results
+            );
+            return createOkResponse(queryResult);
         } catch (Exception e) {
             return createErrorResponse(e);
         }
