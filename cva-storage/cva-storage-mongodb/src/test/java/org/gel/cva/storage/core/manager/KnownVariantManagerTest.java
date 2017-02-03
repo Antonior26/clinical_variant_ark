@@ -3,6 +3,7 @@ package org.gel.cva.storage.core.manager;
 import org.gel.cva.storage.core.config.CvaConfiguration;
 import org.gel.cva.storage.core.exceptions.CvaException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
+import org.gel.cva.storage.core.exceptions.IllegalCvaCredentialsException;
 import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariantWrapper;
 import org.gel.models.cva.avro.*;
 import org.gel.models.report.avro.ReportedModeOfInheritance;
@@ -44,9 +45,7 @@ public class KnownVariantManagerTest {
     HeritablePhenotype heritablePhenotype = new HeritablePhenotype(phenotype1, modeOfInheritance1);
 
     @Before
-    public void setUp() throws IllegalCvaConfigurationException, IllegalOpenCGACredentialsException,
-            ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException,
-            InvocationTargetException, CvaException{
+    public void setUp() throws IllegalCvaConfigurationException, IllegalCvaCredentialsException {
 
         //NOTE: authenticated loin does not work, don't know why...
         // Loads the testing configuration

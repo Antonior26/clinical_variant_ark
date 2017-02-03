@@ -178,18 +178,6 @@ public class CvaWSServer {
             knownVariantManager = new KnownVariantManager(configuration);
         } catch (IllegalCvaConfigurationException e) {
             e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (IllegalOpenCGACredentialsException e) {
-            e.printStackTrace();
         }
 
         /*
@@ -223,20 +211,8 @@ public class CvaWSServer {
             knownVariantManager = new KnownVariantManager(configuration);
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (CvaException e) {
+        } catch (IllegalCvaConfigurationException e) {
             logger.error("Error while creating KnownVariantManager", e);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (IllegalOpenCGACredentialsException e) {
-            e.printStackTrace();
         }
     }
 

@@ -36,14 +36,18 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
     private KnownVariantDBAdaptor knownVariantDBAdaptor;
 
     public KnownVariantManager(CvaConfiguration cvaConfiguration)
-            throws IllegalCvaConfigurationException, IllegalOpenCGACredentialsException,
-            ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException,
-            InvocationTargetException {
+            throws IllegalCvaConfigurationException {
         super(cvaConfiguration);
         String adaptorImplClass = cvaConfiguration.getStorageEngines().get(0).getOptions().get("adaptor.knownvariants");
-        Class<?> clazz = Class.forName(adaptorImplClass);
-        Constructor<?> ctor = clazz.getConstructor(CvaConfiguration.class);
-        this.knownVariantDBAdaptor = (KnownVariantDBAdaptor)ctor.newInstance(new Object[] { cvaConfiguration });
+        try {
+            Class<?> clazz = Class.forName(adaptorImplClass);
+            Constructor<?> ctor = clazz.getConstructor(CvaConfiguration.class);
+            this.knownVariantDBAdaptor = (KnownVariantDBAdaptor) ctor.newInstance(new Object[]{cvaConfiguration});
+        }
+        catch (ReflectiveOperationException ex) {
+            throw new IllegalCvaConfigurationException("Error setting KnownVariantDBAdaptor implementation: " +
+                    ex.getMessage());
+        }
     }
 
     /**
