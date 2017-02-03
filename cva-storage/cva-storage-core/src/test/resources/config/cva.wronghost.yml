@@ -1,0 +1,53 @@
+---
+defaultStorageEngineId: "mongodb"
+logLevel: "debug"
+logFile: ""
+tempFolder: "/home/priesgo/.cva"
+
+## CellBase client configuration, this is used mainly when annotating variants
+## This can be set up using maven profiles in your .m2/settings.xml
+cellbase:
+  hosts:      ## 'remote' URL hosts to annotate variants, for example: http://bioinfo.hpc.cam.ac.uk/cellbase/
+  - "http://10.5.8.201:8080/cellbase-4.5.0-rc"
+  version: "v4"
+  database:   ## 'local' connection to CellBase MongoDB
+    hosts:
+    - "10.5.8.200:27017"
+    user: ""
+    password: ""
+    options:         ## This is intended for database specific options such as --authenticationDatabase in MongoDB
+      authenticationDatabase: ""
+      readPreference: "secondaryPreferred"
+  preferred: "remote"   ## This accept two values: 'local' and 'remote' to fetch data
+
+storageEngines:
+- id: "mongodb"
+  options:
+    database.name: "cva"
+    collection.knownvariants: "known_variants"
+    adaptor.knownvariants: "org.gel.cva.storage.mongodb.knownvariant.adaptors.KnownVariantMongoDBAdaptor"
+  database:
+    hosts:
+    - "localhost"
+    user: ""
+    password: ""
+    options:
+      ## Mongo specific options
+      authenticationDatabase:
+      connectionsPerHost: 20
+      readPreference: "secondaryPreferred"
+
+# The organism values.
+organism:
+  taxonomyCode: 9606
+  scientificName: hsapiens
+  commonName: human
+  # Possible values: GRCh37 and GRCh38
+  assembly: GRCh38
+
+clinVar:
+  ftpServer: ftp.ncbi.nlm.nih.gov
+  user: anonymous
+  password:
+  # %s will be replaced with the organism.assembly value
+  assemblyFolder: pub/clinvar/vcf_%s
