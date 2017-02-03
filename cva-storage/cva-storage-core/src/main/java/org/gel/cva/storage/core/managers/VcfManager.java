@@ -1,31 +1,22 @@
 package org.gel.cva.storage.core.managers;
 
-import org.apache.commons.io.FileUtils;
 import org.gel.cva.storage.core.config.CvaConfiguration;
 import org.gel.cva.storage.core.exceptions.CvaException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
-import org.gel.cva.storage.core.exceptions.VcfManagerException;
 import org.opencb.biodata.models.variant.Variant;
-import org.opencb.biodata.models.variant.VariantSource;
-import org.opencb.biodata.models.variant.VariantStudy;
-import org.opencb.biodata.tools.variant.VariantVcfHtsjdkReader;
 import org.opencb.commons.datastore.core.QueryResult;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 
 import java.io.*;
 import java.net.URL;
-import java.util.List;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipException;
 
 /**
  * Created by priesgo on 03/02/17.
  */
-public class VcfManager extends CvaManager implements IVcfManager {
+public class VcfManager extends AbstractVcfManager implements IVcfManager {
 
-    private IKnownVariantManager knownVariantManager;
-    private CvaConfiguration cvaConfiguration;
-    private static final String SUBMITTER = "VCF-loader";
+    protected IKnownVariantManager knownVariantManager;
+    protected CvaConfiguration cvaConfiguration;
 
     public VcfManager(CvaConfiguration cvaConfiguration) throws IllegalCvaConfigurationException {
         super(cvaConfiguration);
@@ -55,75 +46,32 @@ public class VcfManager extends CvaManager implements IVcfManager {
     public QueryResult loadVcf(File localVcf)
             throws VariantAnnotatorException, CvaException {
 
-        // Reads input VCF and registers each variant into CVA
-        VariantVcfHtsjdkReader reader = this.getVcfReader(localVcf);
-        reader.open();
-        reader.pre();
-        List<Variant> read;
-        do {
-            read = reader.read();
-            for (Variant variant : read) {
-                this.knownVariantManager.createKnownVariant(
-                        localVcf.getName(),     // TODO: add as a submitter the interface user???
-                        variant.getChromosome(),
-                        variant.getStart(),
-                        variant.getReference(),
-                        variant.getAlternate()
-                );
-            }
-        } while (!read.isEmpty());
-        reader.close();
+        processVcf(localVcf);
+        // TODO: create a QueryResult to be returned
         return null;
     }
 
     /**
-     * Downloads a remote file into the CVA's temp folder
-     * @param remoteVcf     the remote VCF URL
-     * @return              the downloaded file
-     * @throws IOException
+     * Registers every variant in CVA
+     * @param localVcf
+     * @param variant
+     * @throws CvaException
      */
-    private File downloadVcf(URL remoteVcf) throws VcfManagerException {
-        File localVcf = null;
+    @Override
+    protected void processVariant(
+            File localVcf,
+            Variant variant) throws CvaException {
         try {
-            localVcf = new File(this.cvaConfiguration.getTempFolder(), remoteVcf.getFile());
-            FileUtils.copyURLToFile(remoteVcf, localVcf);
-        } catch (IOException ex) {
-            throw new VcfManagerException("Error downloading VCF: " + ex.getMessage());
+            this.knownVariantManager.createKnownVariant(
+                    localVcf.getName(),     // TODO: add as a submitter the interface user???
+                    variant.getChromosome(),
+                    variant.getStart(),
+                    variant.getReference(),
+                    variant.getAlternate()
+            );
         }
-        return localVcf;
-    }
-
-    /**
-     * Creates a VCF reader
-     * @param localVcf      the input VCF
-     * @return              the VCF reader
-     * @throws VcfManagerException
-     */
-    private VariantVcfHtsjdkReader getVcfReader(File localVcf) throws VcfManagerException {
-
-        // Reads input VCF
-        InputStream inputStream;
-        try {
-            try {
-                inputStream = new GZIPInputStream(new FileInputStream(localVcf));
-            } catch (ZipException ex) {
-                inputStream = new FileInputStream(localVcf);
-            } catch (IOException ex) {
-                throw new VcfManagerException(ex.getMessage());
-            }
-        } catch (FileNotFoundException ex) {
-            throw new VcfManagerException(ex.getMessage());
+        catch (VariantAnnotatorException e) {
+            throw new CvaException(e.getMessage());
         }
-        VariantSource source = new VariantSource(
-                localVcf.getName(),
-                "1",
-                "1",
-                "fake",
-                VariantStudy.StudyType.FAMILY,
-                VariantSource.Aggregation.NONE);
-        VariantVcfHtsjdkReader reader = new VariantVcfHtsjdkReader(
-                inputStream,
-                source);
-        return reader;
     }
 }

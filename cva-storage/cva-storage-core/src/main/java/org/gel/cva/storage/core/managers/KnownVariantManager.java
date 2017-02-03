@@ -187,7 +187,7 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
         KnownVariantWrapper knownVariantWrapper =
                 this.knownVariantDBAdaptor.find(chromosome, position, reference, alternate);
         if (knownVariantWrapper == null) {
-            throw new CvaException("Cannot add a curation to a non registered variant");
+            throw new CvaException("Cannot add an evidence to a non registered variant");
         }
         knownVariantWrapper.addEvidence(submitter, sourceName, sourceType, sourceVersion, sourceUrl, sourceId,
                 alleleOrigin, heritablePhenotypes, transcript, evidencePathogenicity, evidenceBenignity,

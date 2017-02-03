@@ -154,6 +154,8 @@ public class CvaConfiguration {
         return new MongoClient(connectionString);
     }
 
+    private static CellBaseDirectVariantAnnotator cellBaseDirectVariantAnnotator = null;
+
     /**
      * Returns the CellBaseDirectVariantAnnotator
      * @return      CellBaseDirectVariantAnnotator
@@ -162,14 +164,17 @@ public class CvaConfiguration {
      */
     public static CellBaseDirectVariantAnnotator getCellBaseDirectVariantAnnotator()
             throws IllegalCvaConfigurationException, VariantAnnotatorException {
-        CvaConfiguration cvaConfiguration = CvaConfiguration.getInstance();
-        StorageConfiguration storageConfiguration = new StorageConfiguration();
-        storageConfiguration.setCellbase(cvaConfiguration.getCellbase());
-        ObjectMap options = new ObjectMap();
-        options.put("species", cvaConfiguration.getOrganism().getScientificName());
-        options.put("assembly", cvaConfiguration.getOrganism().getAssembly());
-        CellBaseDirectVariantAnnotator cellBaseDirectVariantAnnotator = new CellBaseDirectVariantAnnotator(
-                storageConfiguration, options);
+
+        if (cellBaseDirectVariantAnnotator == null) {
+            CvaConfiguration cvaConfiguration = CvaConfiguration.getInstance();
+            StorageConfiguration storageConfiguration = new StorageConfiguration();
+            storageConfiguration.setCellbase(cvaConfiguration.getCellbase());
+            ObjectMap options = new ObjectMap();
+            options.put("species", cvaConfiguration.getOrganism().getScientificName());
+            options.put("assembly", cvaConfiguration.getOrganism().getAssembly());
+            cellBaseDirectVariantAnnotator = new CellBaseDirectVariantAnnotator(
+                    storageConfiguration, options);
+        }
         return cellBaseDirectVariantAnnotator;
     }
 

@@ -1,6 +1,7 @@
 package org.gel.cva.storage.core.managers;
 
 import org.gel.cva.storage.core.config.CvaConfiguration;
+import org.gel.cva.storage.core.exceptions.CvaException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaCredentialsException;
 import org.junit.After;
@@ -21,7 +22,7 @@ public class GenericManagerTest<T extends CvaManager> {
     protected MongoDataStore db;
 
     @Before
-    public void setUp() throws IllegalCvaConfigurationException, IllegalCvaCredentialsException {
+    public void setUp() throws CvaException {
 
         //NOTE: authenticated loin does not work, don't know why...
         // Loads the testing configuration

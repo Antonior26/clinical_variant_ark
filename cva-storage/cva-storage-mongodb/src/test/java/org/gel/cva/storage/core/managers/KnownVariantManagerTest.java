@@ -37,7 +37,7 @@ public class KnownVariantManagerTest extends GenericManagerTest<KnownVariantMana
     HeritablePhenotype heritablePhenotype = new HeritablePhenotype(phenotype1, modeOfInheritance1);
 
     @Before
-    public void setUp() throws IllegalCvaConfigurationException, IllegalCvaCredentialsException {
+    public void setUp() throws CvaException {
         // Intialize managers to test
         super.setUp();
         this.dropCollection(collection);
