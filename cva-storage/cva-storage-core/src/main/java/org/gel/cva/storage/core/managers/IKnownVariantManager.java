@@ -1,4 +1,4 @@
-package org.gel.cva.storage.core.manager;
+package org.gel.cva.storage.core.managers;
 
 import org.gel.cva.storage.core.exceptions.CvaException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaArgumentException;
@@ -14,6 +14,13 @@ import java.util.List;
  * Created by priesgo on 31/01/17.
  */
 public interface IKnownVariantManager {
+
+
+    /**
+     * Returns the number of documents in the KnownVariants collection
+     * @return
+     */
+    Long count ();
 
     /**
      * Registers a known variant in CVA, if the variant already exists it does nothing.

@@ -17,6 +17,13 @@ import java.util.List;
 //TODO: extend Iterable<CuratedVariant>
 public interface KnownVariantDBAdaptor extends AutoCloseable {
 
+
+    /**
+     * Returns the number of documents in the known variants collection.
+     * @return
+     */
+    Long count();
+
     /**
      * This method inserts a single KnownVariant in the database. If the variant already exists... throw error?
      * @param knownVariant      List of curated variants in OpenCB data model to be inserted

@@ -1,4 +1,4 @@
-package org.gel.cva.storage.core.manager;
+package org.gel.cva.storage.core.managers;
 
 import org.gel.cva.storage.core.config.CvaConfiguration;
 

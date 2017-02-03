@@ -1,7 +1,5 @@
-package org.gel.cva.storage.core.manager;
+package org.gel.cva.storage.core.managers;
 
-import org.apache.commons.net.ftp.FTPClient;
-import org.apache.commons.net.ftp.FTPFile;
 import org.gel.cva.storage.core.config.CvaConfiguration;
 import org.gel.cva.storage.core.exceptions.CvaException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaArgumentException;
@@ -11,22 +9,10 @@ import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariantWrapper;
 import org.gel.models.cva.avro.*;
 import org.gel.models.report.avro.EthnicCategory;
 import org.gel.models.report.avro.ReportedModeOfInheritance;
-import org.opencb.commons.datastore.core.QueryResult;
-import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by priesgo on 19/01/17.
@@ -48,6 +34,15 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
             throw new IllegalCvaConfigurationException("Error setting KnownVariantDBAdaptor implementation: " +
                     ex.getMessage());
         }
+    }
+
+    /**
+     * Returns the number of documents in the KnownVariants collection
+     * @return
+     */
+    @Override
+    public Long count() {
+        return this.knownVariantDBAdaptor.count();
     }
 
     /**

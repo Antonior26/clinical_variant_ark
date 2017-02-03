@@ -17,7 +17,10 @@
 package org.gel.cva.storage.mongodb.knownvariant.adaptors;
 
 
+import com.mongodb.ErrorCategory;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoWriteException;
+import com.mongodb.WriteError;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.result.UpdateResult;
@@ -86,6 +89,11 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
         this.knownVariantsCollection = database.getCollection(this.collectionName);
     }
 
+    @Override
+    public Long count() {
+        return this.knownVariantsCollection.count();
+    }
+
     /**
      * This method inserts a single KnownVariant in the database. If the variant already exists... throw error?
      * @param knownVariant      List of curated variants in OpenCB data model to be inserted
@@ -96,9 +104,17 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
     public String insert(KnownVariantWrapper knownVariant, QueryOptions options) {
 
         // Creates a set of converters
-
         Document curatedVariantDocument = this.knownVariantConverter.convertToStorageType(knownVariant);
-        this.knownVariantsCollection.insertOne(curatedVariantDocument);
+        try {
+            this.knownVariantsCollection.insertOne(curatedVariantDocument);
+        } catch (MongoWriteException ex) {
+            if (ex.getError().getCategory() == ErrorCategory.DUPLICATE_KEY) {
+                //TODO: log this problem and notify somehow in the output
+            }
+            else {
+                throw ex;
+            }
+        }
         return (String) curatedVariantDocument.get("_id");
     }
 

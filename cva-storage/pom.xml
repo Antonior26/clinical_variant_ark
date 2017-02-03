@@ -17,6 +17,7 @@
     <modules>
         <module>cva-storage-core</module>
         <module>cva-storage-mongodb</module>
+        <module>../cva-app</module>
     </modules>
 
 </project>

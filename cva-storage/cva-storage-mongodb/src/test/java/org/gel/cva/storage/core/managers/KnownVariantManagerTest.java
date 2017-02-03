@@ -1,4 +1,4 @@
-package org.gel.cva.storage.core.manager;
+package org.gel.cva.storage.core.managers;
 
 import org.gel.cva.storage.core.config.CvaConfiguration;
 import org.gel.cva.storage.core.exceptions.CvaException;
@@ -10,14 +10,8 @@ import org.gel.models.report.avro.ReportedModeOfInheritance;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.opencb.commons.datastore.mongodb.MongoDataStore;
-import org.opencb.commons.datastore.mongodb.MongoDataStoreManager;
-import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
-import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;
 
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -27,11 +21,9 @@ import static org.junit.Assert.assertNotNull;
 /**
  * Created by priesgo on 31/01/17.
  */
-public class KnownVariantManagerTest {
+public class KnownVariantManagerTest extends GenericManagerTest<KnownVariantManager> {
 
-    KnownVariantManager knownVariantManager;
-    CvaConfiguration cvaConfiguration;
-    MongoDataStore db;
+    String collection;
     String submitter = "theSubmitter";
     String chromosome = "chr19";
     String chromosomeNormalized = "19";  // OpenCB normalizes chromosome identifiers
@@ -46,35 +38,25 @@ public class KnownVariantManagerTest {
 
     @Before
     public void setUp() throws IllegalCvaConfigurationException, IllegalCvaCredentialsException {
-
-        //NOTE: authenticated loin does not work, don't know why...
-        // Loads the testing configuration
-        InputStream configStream = KnownVariantManagerTest.class.getResourceAsStream(
-                "/config/cva.test.yml");
-        this.cvaConfiguration = CvaConfiguration.load(configStream, "yaml");
-        // Initilize mongo client
-        MongoCredentials credentials = this.cvaConfiguration.getMongoCredentials();
-        MongoDataStoreManager mongoManager = new MongoDataStoreManager(credentials.getDataStoreServerAddresses());
-        this.db = mongoManager.get(credentials.getMongoDbName(), credentials.getMongoDBConfiguration());
-        // drops the testing collection before starting tests
-        String collection = this.cvaConfiguration.getStorageEngines().get(0).getOptions().get("collection.knownvariants");
-        db.dropCollection(collection);
-        // Intialize manager to test
-        this.knownVariantManager = new KnownVariantManager(CvaConfiguration.getInstance());
+        // Intialize managers to test
+        super.setUp();
+        this.dropCollection(collection);
+        this.manager = new KnownVariantManager(CvaConfiguration.getInstance());
+        this.collection = this.cvaConfiguration.getStorageEngines().get(0).getOptions().get("collection.knownvariants");
     }
 
     @After
     public void tearDown() {
         // Drops the testing database
-        String collection = this.cvaConfiguration.getStorageEngines().get(0).getOptions().get("collection.knownvariants");
-        db.dropCollection(collection);
+        this.dropCollection(collection);
+        super.tearDown();
     }
 
     @Test
     public void test1() throws VariantAnnotatorException, CvaException{
 
         // Registers a new known variant
-        KnownVariantWrapper knownVariantWrapper = this.knownVariantManager.createKnownVariant(
+        KnownVariantWrapper knownVariantWrapper = this.manager.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
@@ -89,7 +71,7 @@ public class KnownVariantManagerTest {
         assertEquals(this.submitter, knownVariantWrapper.getImpl().getSubmitter());
         assertNotNull(knownVariantWrapper.getVariant().getAnnotation());
         // Retrieves the variant from the database again
-        knownVariantWrapper = this.knownVariantManager.findKnownVariant(
+        knownVariantWrapper = this.manager.findKnownVariant(
                 chromosome,
                 position,
                 reference,
@@ -102,7 +84,7 @@ public class KnownVariantManagerTest {
         assertEquals(this.submitter, knownVariantWrapper.getImpl().getSubmitter());
         assertNotNull(knownVariantWrapper.getVariant().getAnnotation());
         // Adds a curation
-        knownVariantWrapper = this.knownVariantManager.addCuration(
+        knownVariantWrapper = this.manager.addCuration(
                 chromosome,
                 position,
                 reference,
@@ -124,7 +106,7 @@ public class KnownVariantManagerTest {
                 knownVariantWrapper.getImpl().getCurations().get(0).getCuration().getHeritablePhenotype().getPhenotype());
         assertEquals(1, knownVariantWrapper.getImpl().getCurations().get(0).getHistory().size());
         // Retrieves the variant from the database again
-        knownVariantWrapper = this.knownVariantManager.findKnownVariant(
+        knownVariantWrapper = this.manager.findKnownVariant(
                 chromosome,
                 position,
                 reference,
@@ -137,7 +119,7 @@ public class KnownVariantManagerTest {
                 knownVariantWrapper.getImpl().getCurations().get(0).getCuration().getHeritablePhenotype().getPhenotype());
         assertEquals(1, knownVariantWrapper.getImpl().getCurations().get(0).getHistory().size());
         // Adds an additional curation
-        knownVariantWrapper = this.knownVariantManager.addCuration(
+        knownVariantWrapper = this.manager.addCuration(
                 chromosome,
                 position,
                 reference,
@@ -159,7 +141,7 @@ public class KnownVariantManagerTest {
                 knownVariantWrapper.getImpl().getCurations().get(0).getCuration().getHeritablePhenotype().getPhenotype());
         assertEquals(2, knownVariantWrapper.getImpl().getCurations().get(0).getHistory().size());
         // Retrieves the variant from the database again
-        knownVariantWrapper = this.knownVariantManager.findKnownVariant(
+        knownVariantWrapper = this.manager.findKnownVariant(
                 chromosome,
                 position,
                 reference,
@@ -172,7 +154,7 @@ public class KnownVariantManagerTest {
                 knownVariantWrapper.getImpl().getCurations().get(0).getCuration().getHeritablePhenotype().getPhenotype());
         assertEquals(2, knownVariantWrapper.getImpl().getCurations().get(0).getHistory().size());
         // Adds an additional curation associated to other phenotype
-        knownVariantWrapper = this.knownVariantManager.addCuration(
+        knownVariantWrapper = this.manager.addCuration(
                 chromosome,
                 position,
                 reference,
@@ -194,7 +176,7 @@ public class KnownVariantManagerTest {
                 knownVariantWrapper.getImpl().getCurations().get(1).getCuration().getHeritablePhenotype().getPhenotype());
         assertEquals(1, knownVariantWrapper.getImpl().getCurations().get(1).getHistory().size());
         // Retrieves the variant from the database again
-        knownVariantWrapper = this.knownVariantManager.findKnownVariant(
+        knownVariantWrapper = this.manager.findKnownVariant(
                 chromosome,
                 position,
                 reference,
@@ -209,7 +191,7 @@ public class KnownVariantManagerTest {
         // Adds an evidence to the variant
         List<HeritablePhenotype> heritablePhenotypeList = new LinkedList<>();
         heritablePhenotypeList.add(heritablePhenotype);
-        knownVariantWrapper = this.knownVariantManager.addEvidence(
+        knownVariantWrapper = this.manager.addEvidence(
                 chromosome,
                 position,
                 reference,
@@ -239,7 +221,7 @@ public class KnownVariantManagerTest {
         assertEquals(ConsistencyStatus.consensus,
                 knownVariantWrapper.getImpl().getCurations().get(0).getCuration().getConsistencyStatus());
         // Retrieves the variant from the database again
-        knownVariantWrapper = this.knownVariantManager.findKnownVariant(
+        knownVariantWrapper = this.manager.findKnownVariant(
                 chromosome,
                 position,
                 reference,
@@ -252,7 +234,7 @@ public class KnownVariantManagerTest {
         assertEquals(ConsistencyStatus.consensus,
                 knownVariantWrapper.getImpl().getCurations().get(0).getCuration().getConsistencyStatus());
         // Adds a second evidence to the variant being in conflict with the first
-        knownVariantWrapper = this.knownVariantManager.addEvidence(
+        knownVariantWrapper = this.manager.addEvidence(
                 chromosome,
                 position,
                 reference,
@@ -282,7 +264,7 @@ public class KnownVariantManagerTest {
         assertEquals(ConsistencyStatus.conflict,
                 knownVariantWrapper.getImpl().getCurations().get(0).getCuration().getConsistencyStatus());
         // Retrieves the variant from the database again
-        knownVariantWrapper = this.knownVariantManager.findKnownVariant(
+        knownVariantWrapper = this.manager.findKnownVariant(
                 chromosome,
                 position,
                 reference,
