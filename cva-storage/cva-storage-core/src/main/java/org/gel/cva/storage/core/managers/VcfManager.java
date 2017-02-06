@@ -61,6 +61,7 @@ public class VcfManager extends AbstractVcfManager implements IVcfManager {
     protected void processVariant(
             File localVcf,
             Variant variant) throws CvaException {
+        System.out.println("Inserting variant " + variant.toString());
         try {
             this.knownVariantManager.createKnownVariant(
                     localVcf.getName(),     // TODO: add as a submitter the interface user???

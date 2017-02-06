@@ -93,8 +93,9 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
             throw new CvaException("Unexpected error normalizing variants.");
         }
         if (variants.size() > 1) {
-            throw new IllegalCvaArgumentException("Cannot register a multi-allelic variant in CVA. " +
-                    "You need to split the variant and register each of them separately.");
+            //TODO: deal with multi-allelic variants at the VcfLoader tool and uncomment this exception
+            //throw new IllegalCvaArgumentException("Cannot register a multi-allelic variant in CVA. " +
+            //        "You need to split the variant and register each of them separately.");
         }
         // stores a reference to the OpenCB variant
         this.variant = variants.get(0);
