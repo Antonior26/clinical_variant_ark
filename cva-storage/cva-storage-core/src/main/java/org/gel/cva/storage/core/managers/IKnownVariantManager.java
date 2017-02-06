@@ -32,7 +32,7 @@ public interface IKnownVariantManager {
      * @param alternate     the alternate bases
      * @return
      */
-    KnownVariantWrapper createKnownVariant(
+    List<KnownVariantWrapper> createKnownVariant(
             String submitter,
             String chromosome,
             Integer position,

@@ -1,10 +1,13 @@
 package org.gel.cva.tools;
 
 import org.apache.commons.cli.*;
+import org.apache.log4j.Logger;
 import org.gel.cva.storage.core.config.CvaConfiguration;
 import org.gel.cva.storage.core.exceptions.CvaException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
+import org.gel.cva.storage.core.knownvariant.wrappers.KnownVariantWrapper;
 import org.gel.cva.storage.core.managers.VcfManager;
+import org.opencb.biodata.models.variant.VariantNormalizer;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
 
 import java.io.File;
@@ -21,6 +24,8 @@ public class VcfLoader {
     private final String commandLineSyntax = "java -cp cva-app-0.1.jar";
     private final String helpHeader = "CVA - VCF loader tool help";
     private final String helpFooter = "--------------------------";
+    private VariantNormalizer variantNormalizer;
+    private Logger logger;
 
     public VcfLoader() throws IllegalCvaConfigurationException {
 
@@ -34,6 +39,9 @@ public class VcfLoader {
         this.commandLineParser = new DefaultParser();
         // Initialize the VCF manager
         this.vcfManager = new VcfManager(CvaConfiguration.getInstance());
+        this.variantNormalizer = new VariantNormalizer(
+                true, true, true);
+        this.logger = CvaConfiguration.getLogger();
     }
 
     /**
@@ -75,14 +83,14 @@ public class VcfLoader {
             {
 
                 File vcfFile = new File(commandLine.getOptionValue("v"));
-                System.out.println("Starting load of file " + vcfFile.getAbsolutePath());
+                this.logger.info("Starting load of file " + vcfFile.getAbsolutePath());
                 this.vcfManager.loadVcf(vcfFile);
-                System.out.println("Finished loading VCF file!");
+                this.logger.info("Finished loading VCF file!");
             }
         }
         catch (ParseException parseException)  // checked exception
         {
-            System.err.println(
+            this.logger.error(
                     "Encountered exception while parsing using GnuParser:\n"
                             + parseException.getMessage() );
         }

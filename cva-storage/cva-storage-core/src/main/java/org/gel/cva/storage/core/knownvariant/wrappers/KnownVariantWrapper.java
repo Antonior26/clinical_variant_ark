@@ -51,14 +51,13 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
     private Variant variant;
     private List<String> transcripts = null;
     private static CellBaseDirectVariantAnnotator cellBaseDirectVariantAnnotator;
-    private static VariantNormalizer variantNormalizer;
+    private static VariantNormalizer variantNormalizer = new VariantNormalizer(
+            true, true, true);
 
     {
         // Initializes static elements to annotate and normalize
         KnownVariantWrapper.cellBaseDirectVariantAnnotator =
                 CvaConfiguration.getCellBaseDirectVariantAnnotator();
-        KnownVariantWrapper.variantNormalizer = new VariantNormalizer(
-                true, true, true);
     }
 
     /**
@@ -74,31 +73,53 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
     }
     */
 
+    public static List<KnownVariantWrapper> buildKnownVariant(
+            String submitter,
+            Variant variant,
+            Boolean enableAnnotation) throws CvaException, VariantAnnotatorException {
+
+        // normalizes the variant before storing it
+        List<Variant> variants = KnownVariantWrapper.variantNormalizer.apply(Collections.singletonList(variant));
+        if (variants == null || variants.size() == 0) {
+            throw new CvaException("Unexpected error normalizing variants.");
+        }
+        List<KnownVariantWrapper> knownVariantWrappers = new LinkedList<>();
+        for (Variant variant1 : variants) {
+            knownVariantWrappers.add(new KnownVariantWrapper(
+                    submitter,
+                    variant1,
+                    enableAnnotation));
+        }
+        return knownVariantWrappers;
+    }
+
+    public static List<KnownVariantWrapper> buildKnownVariant(
+            String submitter,
+            String chromosome,
+            int position,
+            String reference,
+            String alternate,
+            Boolean enableAnnotation) throws CvaException, VariantAnnotatorException {
+        return KnownVariantWrapper.buildKnownVariant(
+                submitter,
+                new Variant(chromosome, position, reference, alternate), enableAnnotation);
+    }
+
     /**
      * Constructor for KnownVariantWrapper
      * @param submitter         the submitter of the variant
      * @param variant           the Variant wrapper
      * @param enableAnnotation  flag to perform annotation on the variant
      */
-    public KnownVariantWrapper(
+    private KnownVariantWrapper(
             String submitter,
             Variant variant,
             Boolean enableAnnotation)
-            throws VariantAnnotatorException,
-            CvaException
+            throws VariantAnnotatorException, CvaException
     {
-        // normalizes the variant before storing it
-        List<Variant> variants = KnownVariantWrapper.variantNormalizer.apply(Collections.singletonList(variant));
-        if (variants == null || variants.size() == 0) {
-            throw new CvaException("Unexpected error normalizing variants.");
-        }
-        if (variants.size() > 1) {
-            //TODO: deal with multi-allelic variants at the VcfLoader tool and uncomment this exception
-            //throw new IllegalCvaArgumentException("Cannot register a multi-allelic variant in CVA. " +
-            //        "You need to split the variant and register each of them separately.");
-        }
+
         // stores a reference to the OpenCB variant
-        this.variant = variants.get(0);
+        this.variant = variant;
         // creates the underlying KnownVariantAvro model with default values
         this.impl = new KnownVariant(
                 submitter,
@@ -114,20 +135,6 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
     }
 
     /**
-     * Constructor for KnownVariantWrapper. Annotations enabled.
-     * @param submitter         the submitter of the variant
-     * @param variant           the Variant wrapper
-     */
-    public KnownVariantWrapper(
-            String submitter,
-            Variant variant)
-            throws VariantAnnotatorException,
-            CvaException
-    {
-        this(submitter, variant, true);
-    }
-
-    /**
      * Constructor for KnownVariantWrapper
      * @param submitter         the user name for the submitter
      * @param chromosome        the chromosome identifier, it will be normalized
@@ -138,7 +145,7 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
      * @throws VariantAnnotatorException            wrong annotation (this excceptions need to be managed...)
      * @throws IllegalCvaConfigurationException     Wrong CVA settings
      */
-    public KnownVariantWrapper(
+    private KnownVariantWrapper(
             String submitter,
             String chromosome,
             int position,
@@ -147,26 +154,6 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
             Boolean enableAnnotation)
             throws VariantAnnotatorException, CvaException{
         this(submitter, new Variant(chromosome, position, reference, alternate), enableAnnotation);
-    }
-
-    /**
-     * Constructor for KnownVariantWrapper. Annotations enabled
-     * @param submitter         the user name for the submitter
-     * @param chromosome        the chromosome identifier, it will be normalized
-     * @param position          the genomic coordinate
-     * @param reference         the reference base/s
-     * @param alternate         the alternate base/s
-     * @throws VariantAnnotatorException            wrong annotation (this excceptions need to be managed...)
-     * @throws IllegalCvaConfigurationException     Wrong CVA settings
-     */
-    public KnownVariantWrapper(
-            String submitter,
-            String chromosome,
-            int position,
-            String reference,
-            String alternate)
-            throws VariantAnnotatorException, CvaException{
-        this(submitter, chromosome, position, reference, alternate, true);
     }
 
     /**
@@ -699,8 +686,10 @@ public class KnownVariantWrapper implements Serializable, IKnownVariantWrapper {
         this.impl.getVariant().setAnnotation(variantAnnotation);
         // Sets list of overlapping transcripts
         this.transcripts = new ArrayList<>();
-        for (ConsequenceType consequenceType: variantAnnotation.getConsequenceTypes()) {
-            transcripts.add(consequenceType.getEnsemblTranscriptId());
+        if (variantAnnotation != null) {
+            for (ConsequenceType consequenceType : variantAnnotation.getConsequenceTypes()) {
+                transcripts.add(consequenceType.getEnsemblTranscriptId());
+            }
         }
     }
 

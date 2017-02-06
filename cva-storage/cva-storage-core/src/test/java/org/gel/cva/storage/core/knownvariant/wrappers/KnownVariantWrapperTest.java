@@ -45,21 +45,22 @@ public class KnownVariantWrapperTest {
 
     }
 
-    private KnownVariantWrapper createKnownVariant(
+    private List<KnownVariantWrapper> createKnownVariant(
             String submitter,
             String chromosome,
             Integer position,
             String reference,
             String alternate) {
 
-        KnownVariantWrapper knownVariantWrapper = null;
+        List<KnownVariantWrapper> knownVariantWrappers = null;
         try {
-            knownVariantWrapper = new KnownVariantWrapper(
+            knownVariantWrappers = KnownVariantWrapper.buildKnownVariant(
                     submitter,
                     chromosome,
                     position,
                     reference,
-                    alternate);
+                    alternate,
+                    true);
         }
         catch (CvaException ex) {
             assertTrue(false);  // this should never raise
@@ -67,7 +68,7 @@ public class KnownVariantWrapperTest {
         catch (VariantAnnotatorException ex) {
             assertTrue(false);  // this should never raise
         }
-        return knownVariantWrapper;
+        return knownVariantWrappers;
     }
 
     private void createCuration(
@@ -112,13 +113,15 @@ public class KnownVariantWrapperTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         assertNotEquals(chromosome, knownVariantWrapper.getImpl().getVariant().getChromosome());
         assertEquals(chromosomeNormalized, knownVariantWrapper.getImpl().getVariant().getChromosome());
         assertEquals(position, knownVariantWrapper.getImpl().getVariant().getStart());
@@ -456,13 +459,15 @@ public class KnownVariantWrapperTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         String curator = null;
         String phenotype = "HPO:000001";
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
@@ -495,13 +500,15 @@ public class KnownVariantWrapperTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         String curator = "";
         String phenotype = "HPO:000001";
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
@@ -534,13 +541,15 @@ public class KnownVariantWrapperTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         String curator = "theCurator";
         String phenotype = null;
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
@@ -573,13 +582,15 @@ public class KnownVariantWrapperTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         String curator = "theCurator";
         String phenotype = "";
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
@@ -612,13 +623,15 @@ public class KnownVariantWrapperTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         String curator = "theCurator";
         String phenotype = "HP:0000001";
         ReportedModeOfInheritance inheritance = null;
@@ -661,13 +674,15 @@ public class KnownVariantWrapperTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         List<HeritablePhenotype> heritablePhenotypes = new LinkedList<>();
         HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
         submitter = null;
@@ -707,13 +722,15 @@ public class KnownVariantWrapperTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         List<HeritablePhenotype> heritablePhenotypes = new LinkedList<>();
         HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
         submitter = "";
@@ -753,13 +770,15 @@ public class KnownVariantWrapperTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         List<HeritablePhenotype> heritablePhenotypes = new LinkedList<>();
         HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
         submitter = "theSubmitter";
@@ -799,13 +818,15 @@ public class KnownVariantWrapperTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         List<HeritablePhenotype> heritablePhenotypes = new LinkedList<>();
         HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
         submitter = "theSubmitter";
@@ -845,13 +866,15 @@ public class KnownVariantWrapperTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         List<HeritablePhenotype> heritablePhenotypes = new LinkedList<>();
         HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
         submitter = "theSubmitter";
@@ -904,13 +927,15 @@ public class KnownVariantWrapperTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         List<HeritablePhenotype> heritablePhenotypes = new LinkedList<>();
         HeritablePhenotype heritablePhenotype = new HeritablePhenotype();
         submitter = "theSubmitter";
@@ -950,13 +975,15 @@ public class KnownVariantWrapperTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         String curator = "theCurator";
         String phenotype = "HPO:000001";
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
@@ -989,13 +1016,15 @@ public class KnownVariantWrapperTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         String curator = "theCurator";
         String phenotype = "HPO:000001";
         ReportedModeOfInheritance inheritance = ReportedModeOfInheritance.monoallelic_maternally_imprinted;
@@ -1032,13 +1061,15 @@ public class KnownVariantWrapperTest {
         Integer position = 44908684;
         String reference = "T";
         String alternate = "C";
-        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         assertNotEquals(chromosome, knownVariantWrapper.getImpl().getVariant().getChromosome());
         assertEquals(chromosomeNormalized, knownVariantWrapper.getImpl().getVariant().getChromosome());
         assertEquals(position, knownVariantWrapper.getImpl().getVariant().getStart());
@@ -1192,13 +1223,15 @@ public class KnownVariantWrapperTest {
         Integer position = 44908684;
         String reference = "TT";
         String alternate = "TTG";
-        KnownVariantWrapper knownVariantWrapper = this.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         assertEquals(new Integer(position + 2), knownVariantWrapper.getVariant().getStart());
         assertEquals("", knownVariantWrapper.getVariant().getReference());
         assertEquals("G", knownVariantWrapper.getVariant().getAlternate());
@@ -1206,13 +1239,15 @@ public class KnownVariantWrapperTest {
 
         reference = "TTTG";
         alternate = "G";
-        knownVariantWrapper = this.createKnownVariant(
+        knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        knownVariantWrapper = knownVariantWrappers.get(0);
         assertEquals(new Integer(position), knownVariantWrapper.getVariant().getStart());
         assertEquals("TTT", knownVariantWrapper.getVariant().getReference());
         assertEquals("", knownVariantWrapper.getVariant().getAlternate());
@@ -1220,13 +1255,15 @@ public class KnownVariantWrapperTest {
 
         reference = "TTTG";
         alternate = "TCTG";
-        knownVariantWrapper = this.createKnownVariant(
+        knownVariantWrappers = this.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertEquals(1, knownVariantWrappers.size());
+        knownVariantWrapper = knownVariantWrappers.get(0);
         assertEquals(new Integer(position + 1), knownVariantWrapper.getVariant().getStart());
         assertEquals("T", knownVariantWrapper.getVariant().getReference());
         assertEquals("C", knownVariantWrapper.getVariant().getAlternate());

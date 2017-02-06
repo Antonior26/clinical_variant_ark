@@ -1,7 +1,7 @@
 ---
 defaultStorageEngineId: "mongodb"
-logLevel: "debug"
-logFile: ""
+logLevel: "DEBUG"
+logFile: "/home/priesgo/.cva/cva.log"
 tempFolder: "/home/priesgo/.cva"
 
 ## CellBase client configuration, this is used mainly when annotating variants

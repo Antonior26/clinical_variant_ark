@@ -63,8 +63,9 @@ public abstract class AbstractStorageServer {
             } else {
                 logger.info("Loading configuration files from inside JAR file");
 //                generalConfiguration = GeneralConfiguration.load(GeneralConfiguration.class.getClassLoader().getResourceAsStream("configuration.yml"));
-                configuration = CvaConfiguration
+                CvaConfiguration
                         .load(CvaConfiguration.class.getClassLoader().getResourceAsStream("configuration.yml"), "yaml");
+                configuration = CvaConfiguration.getInstance();
                 storageConfiguration = StorageConfiguration
                         .load(StorageConfiguration.class.getClassLoader().getResourceAsStream("storage-configuration.yml"));
             }
@@ -78,8 +79,9 @@ public abstract class AbstractStorageServer {
             if (configDir != null && Files.exists(configDir) && Files.isDirectory(configDir)) {
                 logger.info("Loading configuration files from '{}'", configDir.toString());
 //                generalConfiguration = GeneralConfiguration.load(GeneralConfiguration.class.getClassLoader().getResourceAsStream("configuration.yml"));
-                configuration = CvaConfiguration
+                CvaConfiguration
                         .load(new FileInputStream(new File(configDir.toFile().getAbsolutePath() + "/configuration.yml")), "yaml");
+                configuration = CvaConfiguration.getInstance();
                 storageConfiguration = StorageConfiguration
                         .load(new FileInputStream(new File(configDir.toFile().getAbsolutePath() + "/storage-configuration.yml")));
             }

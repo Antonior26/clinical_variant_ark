@@ -1,5 +1,6 @@
 package org.gel.cva.storage.core.managers;
 
+import org.apache.log4j.Logger;
 import org.gel.cva.storage.core.config.CvaConfiguration;
 import org.gel.cva.storage.core.exceptions.CvaException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
@@ -17,11 +18,13 @@ public class VcfManager extends AbstractVcfManager implements IVcfManager {
 
     protected IKnownVariantManager knownVariantManager;
     protected CvaConfiguration cvaConfiguration;
+    protected Logger logger;
 
     public VcfManager(CvaConfiguration cvaConfiguration) throws IllegalCvaConfigurationException {
         super(cvaConfiguration);
         this.cvaConfiguration = cvaConfiguration;
         this.knownVariantManager = new KnownVariantManager(cvaConfiguration);
+        this.logger = CvaConfiguration.getLogger();
     }
 
     /**
@@ -61,7 +64,7 @@ public class VcfManager extends AbstractVcfManager implements IVcfManager {
     protected void processVariant(
             File localVcf,
             Variant variant) throws CvaException {
-        System.out.println("Inserting variant " + variant.toString());
+        this.logger.debug("Inserting variant " + variant.toString());
         try {
             this.knownVariantManager.createKnownVariant(
                     localVcf.getName(),     // TODO: add as a submitter the interface user???

@@ -8,9 +8,8 @@ import org.gel.cva.storage.core.exceptions.CvaException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.cva.storage.core.exceptions.VcfManagerException;
 import org.gel.cva.storage.core.knownvariant.adaptors.KnownVariantDBAdaptor;
-import org.gel.models.cva.avro.AlleleOrigin;
-import org.gel.models.cva.avro.EvidencePathogenicity;
-import org.gel.models.cva.avro.SourceType;
+import org.gel.models.cva.avro.*;
+import org.gel.models.report.avro.ReportedModeOfInheritance;
 import org.opencb.biodata.models.variant.Variant;
 import org.opencb.opencga.core.auth.IllegalOpenCGACredentialsException;
 import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorException;
@@ -22,9 +21,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by priesgo on 19/01/17.
@@ -67,6 +64,12 @@ public class ClinVarManager extends VcfManager implements IClinVarManager {
         throw new NotImplementedException();
     }
 
+    private final String CLNSIG = "CLNSIG";
+    private final String CLNDSDB = "CLNDSDB";
+    private final String CLNDSDBID = "CLNDSDBID";
+    private final String CLNDBN = "CLNDBN";
+    private final String CLNREVSTAT = "CLNREVSTAT";
+
     /**
      * Registers every variant in CVA
      * @param localVcf
@@ -77,29 +80,91 @@ public class ClinVarManager extends VcfManager implements IClinVarManager {
     protected void processVariant(
             File localVcf,
             Variant variant) throws CvaException {
+        
         try {
-            this.knownVariantManager.addEvidence(
-                    variant.getChromosome(),
-                    variant.getStart(),
-                    variant.getReference(),
-                    variant.getAlternate(),
-                    localVcf.getName(),
-                    "ClinVar",
-                    SourceType.database,
-                    localVcf.getName(),
-                    "",
-                    "",
-                    AlleleOrigin.germline,
-                    Collections.emptyList(),
-                    null,
-                    EvidencePathogenicity.moderate,
-                    null,
-                    "",
-                    "",
-                    0,
-                    null,
-                    ""
-            );
+            Map annotations = variant.getStudies().get(0).getFiles().get(0).getAttributes();
+            List<String> significances = Arrays.asList(((String) annotations.get(this.CLNSIG)).split("|"));
+            List<String> dbNames = Arrays.asList(((String) annotations.get(this.CLNDSDB)).split("|"));
+            List<String> dbIds = Arrays.asList(((String) annotations.get(this.CLNDSDBID)).split("|"));
+            List<String> phenotypes = Arrays.asList(((String) annotations.get(this.CLNDBN)).split("|"));
+            List<String> revisionStatuss = Arrays.asList(((String) annotations.get(this.CLNREVSTAT)).split("|"));
+            //List<String> accessions = Arrays.asList(((String) annotations.get("CLNACC")).split("|"));
+            for (int i = 0; i < significances.size();  i++) {
+                String significance = significances.get(i);
+                CurationClassification curationClassification = this.getCurationClassificationFromClinicalsignificance(significance);
+                RevisionStatus revisionStatus = RevisionStatus.valueOf(revisionStatuss.get(i));
+                EvidenceBenignity evidenceBenignity = null;
+                EvidencePathogenicity evidencePathogenicity = null;
+                HeritablePhenotype heritablePhenotype = new HeritablePhenotype(phenotypes.get(i),
+                        ReportedModeOfInheritance.NA);
+                List<HeritablePhenotype> heritablePhenotypes = new LinkedList<>();
+                heritablePhenotypes.add(heritablePhenotype);
+                if (curationClassification == CurationClassification.likely_benign_variant ||
+                        curationClassification == CurationClassification.benign_variant) {
+                    // process the evidence of benignity
+                    switch (revisionStatus) {
+                        case no_assertion:
+                        case no_criteria:
+                        case single:
+                        case conf:
+                            evidenceBenignity = EvidenceBenignity.supporting;
+                            break;
+                        case mult:
+                            evidenceBenignity = EvidenceBenignity.stand_alone;
+                            break;
+                        case exp:
+                        case guideline:
+                            evidenceBenignity = EvidenceBenignity.strong;
+                            break;
+                    }
+                }
+                else if (curationClassification == CurationClassification.pathogenic_variant ||
+                        curationClassification == CurationClassification.likely_pathogenic_variant) {
+                    // process the evidence of pathogenicity
+                    switch (revisionStatus) {
+                        case no_assertion:
+                        case no_criteria:
+                        case single:
+                        case conf:
+                            evidencePathogenicity = EvidencePathogenicity.supporting;
+                            break;
+                        case mult:
+                            evidencePathogenicity = EvidencePathogenicity.moderate;
+                            break;
+                        case exp:
+                            evidencePathogenicity = EvidencePathogenicity.strong;
+                            break;
+                        case guideline:
+                            evidencePathogenicity = EvidencePathogenicity.very_strong;
+                            break;
+                    }
+                }
+                // creates the evidence
+                if (evidenceBenignity != null || evidencePathogenicity != null) {
+                    this.knownVariantManager.addEvidence(
+                            variant.getChromosome(),
+                            variant.getStart(),
+                            variant.getReference(),
+                            variant.getAlternate(),
+                            localVcf.getName(),
+                            dbNames.get(i),
+                            SourceType.database,
+                            null,
+                            "",
+                            dbIds.get(i),
+                            AlleleOrigin.germline,
+                            heritablePhenotypes,
+                            null,
+                            evidencePathogenicity,
+                            evidenceBenignity,
+                            "",
+                            "",
+                            0,
+                            null,
+                            "Evidence extracted automatically from ClinVar: " + localVcf.getName()
+                    );
+                }
+            }
         }
         catch (CvaException e) {
             // TODO: variant not registerd, do something with this
@@ -158,4 +223,62 @@ public class ClinVarManager extends VcfManager implements IClinVarManager {
         }
         return latestURL;
     }
+
+    /**
+     * Transforms clinical significance reported in ClinVar to CVA model.
+     * 0 - Uncertain significance,
+     * 1 - not provided,
+     * 2 - Benign,
+     * 3 - Likely benign,
+     * 4 - Likely pathogenic,
+     * 5 - Pathogenic,
+     * 6 - drug response,
+     * 7 - histocompatibility,
+     * 255 - other
+     * @param clinicalSignificance  ClinVar's clinical significance
+     * @return                      CVA's curation classification
+     */
+    public CurationClassification getCurationClassificationFromClinicalsignificance(String clinicalSignificance)
+    {
+        CurationClassification curationClassification = null;
+        switch (clinicalSignificance) {
+            case "0":
+            case "1":
+            case "7":
+            case "255":
+                curationClassification = CurationClassification.uncertain_significance;
+                break;
+            case "2":
+                curationClassification = CurationClassification.benign_variant;
+                break;
+            case "3":
+                curationClassification = CurationClassification.likely_benign_variant;
+                break;
+            case "4":
+                curationClassification = CurationClassification.likely_pathogenic_variant;
+                break;
+            case "5":
+                curationClassification = CurationClassification.pathogenic_variant;
+                break;
+            case "6":
+                curationClassification = CurationClassification.drug_response;
+                break;
+        }
+        return curationClassification;
+    }
+
+    /**
+     * ClinVar revision status in a Java enum
+     */
+    enum RevisionStatus {
+        no_assertion,
+        no_criteria,
+        single,
+        mult,
+        conf,
+        exp,
+        guideline
+    }
+
+
 }

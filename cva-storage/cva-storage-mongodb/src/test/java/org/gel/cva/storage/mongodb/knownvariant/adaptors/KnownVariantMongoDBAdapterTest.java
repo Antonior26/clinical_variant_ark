@@ -18,6 +18,7 @@ import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorExcept
 import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;
 
 import java.io.InputStream;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -42,7 +43,8 @@ public class KnownVariantMongoDBAdapterTest {
         // Loads the testing configuration
         InputStream configStream = KnownVariantMongoDBAdapterTest.class.getResourceAsStream(
                 "/config/cva.test.yml");
-        this.cvaConfiguration = CvaConfiguration.load(configStream, "yaml");
+        CvaConfiguration.load(configStream, "yaml");
+        this.cvaConfiguration = CvaConfiguration.getInstance();
         // Initilize mongo client
         MongoCredentials credentials = this.cvaConfiguration.getMongoCredentials();
         MongoDataStoreManager mongoManager = new MongoDataStoreManager(credentials.getDataStoreServerAddresses());
@@ -64,9 +66,13 @@ public class KnownVariantMongoDBAdapterTest {
     @Test
     public void test1()
             throws VariantAnnotatorException, CvaException {
+
         // Test when there are differences at the end of the sequence
         Variant variant = new Variant(this.chromosome, this.position, this.reference, this.alternate);
-        KnownVariantWrapper knownVariantWrapper = new KnownVariantWrapper("submitter", variant);
+        List<KnownVariantWrapper> knownVariantWrappers = KnownVariantWrapper.buildKnownVariant(
+                "submitter", variant, true);
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         String id = this.knownVariantMongoDBAdaptor.insert(knownVariantWrapper, null);
         assertNotNull(id);
         // Search for the variant just inserted

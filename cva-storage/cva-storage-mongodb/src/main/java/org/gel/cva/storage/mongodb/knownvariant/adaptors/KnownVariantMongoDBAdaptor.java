@@ -152,9 +152,9 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
         // Creates a new variant and serializes to Bson for two reasons:
         //  * get the variant id to search the database
         //  * consider variant normalization in search
-        KnownVariantWrapper variantToSearch = null;
+        List<KnownVariantWrapper> variantsToSearch = null;
         try {
-            variantToSearch = new KnownVariantWrapper(
+            variantsToSearch = KnownVariantWrapper.buildKnownVariant(
                     "find",
                     chromosome,
                     position,
@@ -166,6 +166,10 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
         catch (VariantAnnotatorException ex) {
             // this exception will be never thrown as we are not annotating
         }
+        if (variantsToSearch.size() > 1) {
+            throw new CvaException("Multi-allelic variants are not supported in search!");
+        }
+        KnownVariantWrapper variantToSearch = variantsToSearch.get(0);
         Document variantToSearchDoc = this.knownVariantConverter.convertToStorageType(variantToSearch);
         String variantId = (String) variantToSearchDoc.get("_id");
         // Search in MongoDB

@@ -56,7 +56,7 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
      * @return
      */
     @Override
-    public KnownVariantWrapper createKnownVariant(
+    public List<KnownVariantWrapper> createKnownVariant(
             String submitter,
             String chromosome,
             Integer position,
@@ -64,11 +64,15 @@ public class KnownVariantManager extends CvaManager implements IKnownVariantMana
             String alternate) throws VariantAnnotatorException, CvaException {
 
         // Creates the variant, normalize it and annotate
-        KnownVariantWrapper knownVariantWrapper =
-                new KnownVariantWrapper(submitter, chromosome, position, reference, alternate);
+        // Deals with multi-allelic variants
+        List<KnownVariantWrapper> knownVariantWrappers =
+                KnownVariantWrapper.buildKnownVariant(
+                        submitter, chromosome, position, reference, alternate, true);
         // Inserts the variants in mongoDB
-        this.knownVariantDBAdaptor.insert(knownVariantWrapper, null);
-        return knownVariantWrapper;
+        for (KnownVariantWrapper knownVariantWrapper: knownVariantWrappers) {
+            this.knownVariantDBAdaptor.insert(knownVariantWrapper, null);
+        }
+        return knownVariantWrappers;
     }
 
     /**

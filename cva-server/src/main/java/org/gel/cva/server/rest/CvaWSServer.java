@@ -203,8 +203,9 @@ public class CvaWSServer {
     private void initCvaObjects(java.nio.file.Path configDir) {
         try {
             logger.info("|  * Catalog configuration file: '{}'", configDir.toFile().getAbsolutePath() + "/cva.yml");
-            configuration = CvaConfiguration
+            CvaConfiguration
                     .load(new FileInputStream(new File(configDir.toFile().getAbsolutePath() + "/cva.yml")), "yaml");
+            configuration = CvaConfiguration.getInstance();
             knownVariantManager = new KnownVariantManager(configuration);
         } catch (IOException e) {
             e.printStackTrace();

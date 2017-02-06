@@ -51,7 +51,8 @@ public class CvaConfigurationTest {
         InputStream configStream = CvaConfigurationTest.class.getResourceAsStream("/config/cva.ok.yml");
         CvaConfiguration cvaConfiguration = null;
         try {
-            cvaConfiguration = CvaConfiguration.load(configStream, "yaml");
+            CvaConfiguration.load(configStream, "yaml");
+            cvaConfiguration = CvaConfiguration.getInstance();
         }
         catch (IllegalCvaConfigurationException ex) {
             assertTrue(false);
@@ -68,25 +69,29 @@ public class CvaConfigurationTest {
     @Test(expected = com.mongodb.MongoSecurityException.class)
     public void testWrongMongoCredentials() throws IllegalCvaCredentialsException, IllegalCvaConfigurationException {
         InputStream configStream = CvaConfigurationTest.class.getResourceAsStream("/config/cva.wrongmongocredentials.yml");
-        CvaConfiguration cvaConfiguration = CvaConfiguration.load(configStream, "yaml");
+        CvaConfiguration.load(configStream, "yaml");
+        CvaConfiguration cvaConfiguration = CvaConfiguration.getInstance();
         CvaConfiguration.getMongoCredentials();
     }
 
     @Test(expected = IllegalCvaConfigurationException.class)
     public void testCvaConfigurationUnexistingStorageId() throws IllegalCvaConfigurationException {
         InputStream configStream = CvaConfigurationTest.class.getResourceAsStream("/config/cva.unexistingstorageid.yml");
-        CvaConfiguration cvaConfiguration = CvaConfiguration.load(configStream, "yaml");
+        CvaConfiguration.load(configStream, "yaml");
+        CvaConfiguration cvaConfiguration = CvaConfiguration.getInstance();
     }
 
     @Test(expected = IllegalCvaConfigurationException.class)
     public void testCvaConfigurationUnexistingStorageId2() throws IllegalCvaConfigurationException {
         InputStream configStream = CvaConfigurationTest.class.getResourceAsStream("/config/cva.unexistingstorageid2.yml");
-        CvaConfiguration cvaConfiguration = CvaConfiguration.load(configStream, "yaml");
+        CvaConfiguration.load(configStream, "yaml");
+        CvaConfiguration cvaConfiguration = CvaConfiguration.getInstance();
     }
 
     @Test(expected = IllegalCvaConfigurationException.class)
     public void testCvaConfigurationWrongHost() throws IllegalCvaConfigurationException {
         InputStream configStream = CvaConfigurationTest.class.getResourceAsStream("/config/cva.wronghost.yml");
-        CvaConfiguration cvaConfiguration = CvaConfiguration.load(configStream, "yaml");
+        CvaConfiguration.load(configStream, "yaml");
+        CvaConfiguration cvaConfiguration = CvaConfiguration.getInstance();
     }
 }

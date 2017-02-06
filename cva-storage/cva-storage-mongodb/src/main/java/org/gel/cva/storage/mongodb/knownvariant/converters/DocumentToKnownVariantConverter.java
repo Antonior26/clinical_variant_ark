@@ -68,11 +68,12 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
         // Converts Variant
         Variant variant = variantConverter.convertToDataModelType(variantDocument);
         // Creates the known variant
-        KnownVariantWrapper curatedVariant = null;
+        List<KnownVariantWrapper> knownVariants = null;
         try {
-            curatedVariant = new KnownVariantWrapper(
+            knownVariants = KnownVariantWrapper.buildKnownVariant(
                     submitter,
-                    variant);
+                    variant,
+                    true);
         }
         catch (VariantAnnotatorException e) {
             //TODO: add this exception to the signature and raise appropriately
@@ -80,6 +81,11 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
         catch (CvaException e) {
             //TODO: add this exception to the signature and raise appropriately
         }
+        if (knownVariants.size() > 1) {
+            //TODO: deal with this error
+            //throw new CvaException("Converters do not support multi-allelic variants");
+        }
+        KnownVariantWrapper knownVariantWrapper = knownVariants.get(0);
         // Converts list of evidences
         List<EvidenceEntry> evidences = new LinkedList<>();
         if (evidencesDocs != null) {
@@ -87,7 +93,7 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
                 evidences.add(this.evidenceEntryConverter.convertToDataModelType(evidencesDoc));
             }
         }
-        curatedVariant.getImpl().setEvidences(evidences);
+        knownVariantWrapper.getImpl().setEvidences(evidences);
         // Converts curation history
         List<CurationEntry> curations = new LinkedList<>();
         if (curationsDocs != null) {
@@ -95,7 +101,7 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
                 curations.add(this.curationEntryConverter.convertToDataModelType(curationDoc));
             }
         }
-        curatedVariant.getImpl().setCurations(curations);
+        knownVariantWrapper.getImpl().setCurations(curations);
         // Converts comments
         List<Comment> comments = new LinkedList<>();
         if (commentsDocs != null) {
@@ -103,8 +109,8 @@ public class DocumentToKnownVariantConverter implements ComplexTypeConverter<Kno
                 comments.add(this.commentConverter.convertToDataModelType(commentsDoc));
             }
         }
-        curatedVariant.getImpl().setComments(comments);
-        return curatedVariant;
+        knownVariantWrapper.getImpl().setComments(comments);
+        return knownVariantWrapper;
     }
 
     @Override

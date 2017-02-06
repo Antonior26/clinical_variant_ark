@@ -95,7 +95,7 @@ public class KnownVariantWSServer extends CvaWSServer {
             @QueryParam("alternate") String alternate) {
 
         try {
-            KnownVariantWrapper result = knownVariantManager.createKnownVariant(
+            List<KnownVariantWrapper> result = knownVariantManager.createKnownVariant(
                     submitter,
                     chromosome,
                     position,
@@ -103,7 +103,9 @@ public class KnownVariantWSServer extends CvaWSServer {
                     alternate
             );
             List<KnownVariant> results = new LinkedList<>();
-            results.add(result.getImpl());
+            for (KnownVariantWrapper knownVariantWrapper : result) {
+                results.add(knownVariantWrapper.getImpl());
+            }
             QueryResult queryResult = new QueryResult<KnownVariant>(
                     "id",
                     0,

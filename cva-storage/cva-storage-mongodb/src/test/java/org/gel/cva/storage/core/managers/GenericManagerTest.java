@@ -28,7 +28,8 @@ public class GenericManagerTest<T extends CvaManager> {
         // Loads the testing configuration
         InputStream configStream = KnownVariantManagerTest.class.getResourceAsStream(
                 "/config/cva.test.yml");
-        this.cvaConfiguration = CvaConfiguration.load(configStream, "yaml");
+        CvaConfiguration.load(configStream, "yaml");
+        this.cvaConfiguration = CvaConfiguration.getInstance();
         // Initilize mongo client
         MongoCredentials credentials = this.cvaConfiguration.getMongoCredentials();
         MongoDataStoreManager mongoManager = new MongoDataStoreManager(credentials.getDataStoreServerAddresses());

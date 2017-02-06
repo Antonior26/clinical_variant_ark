@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
+import org.apache.log4j.*;
 import org.gel.cva.storage.core.exceptions.IllegalCvaConfigurationException;
 import org.gel.cva.storage.core.exceptions.IllegalCvaCredentialsException;
 import org.gel.cva.storage.core.helpers.CvaDateFormatter;
@@ -16,6 +17,7 @@ import org.opencb.opencga.storage.core.variant.annotation.VariantAnnotatorExcept
 import org.opencb.opencga.storage.core.variant.annotation.annotators.CellBaseDirectVariantAnnotator;
 import org.opencb.opencga.storage.mongodb.auth.MongoCredentials;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -37,6 +39,10 @@ public class CvaConfiguration {
     private ServerConfiguration server;
 
     private static CvaConfiguration instance = null;
+    private static StorageEngineConfiguration defaultStorageEngineConfiguration = null;
+    private static MongoCredentials mongoCredentials = null;
+    private static MongoClient mongoClient = null;
+    private static Logger logger = null;
     private static final String CONFIG_FILE = "/cva.yml";
     private static final String CONFIG_FORMAT = "yaml";
 
@@ -70,7 +76,7 @@ public class CvaConfiguration {
      * @return                          the CvaConfiguration singleton
      * @throws IllegalCvaConfigurationException
      */
-    public static CvaConfiguration load(InputStream configurationInputStream, String format)
+    public static void load(InputStream configurationInputStream, String format)
             throws IllegalCvaConfigurationException {
         CvaConfiguration cvaConfiguration;
         ObjectMapper objectMapper;
@@ -93,7 +99,6 @@ public class CvaConfiguration {
         }
         cvaConfiguration.sanityChecks();
         CvaConfiguration.instance = cvaConfiguration;
-        return cvaConfiguration;
     }
 
     /**
@@ -101,10 +106,13 @@ public class CvaConfiguration {
      * @return      Default StorageEngineConfiguration
      */
     public static StorageEngineConfiguration getDefaultStorageEngine() throws IllegalCvaConfigurationException {
-        String defaultStorageEngineId = CvaConfiguration.getInstance().getDefaultStorageEngineId();
-        StorageEngineConfiguration defaultStorageEngineConfiguration = CvaConfiguration.getInstance().getStorageEngines().stream()
-                .filter((storageEngine) -> storageEngine.getId().equals(defaultStorageEngineId))
-                .findFirst().get();
+
+        if (defaultStorageEngineConfiguration == null) {
+            String defaultStorageEngineId = CvaConfiguration.getInstance().getDefaultStorageEngineId();
+            defaultStorageEngineConfiguration = CvaConfiguration.getInstance().getStorageEngines().stream()
+                    .filter((storageEngine) -> storageEngine.getId().equals(defaultStorageEngineId))
+                    .findFirst().get();
+        }
         return defaultStorageEngineConfiguration;
     }
 
@@ -116,25 +124,25 @@ public class CvaConfiguration {
      */
     // TODO: avoid using MongoCredentials in opencga.storage, use instead MongoDBConfiguration
     public static MongoCredentials getMongoCredentials() throws IllegalCvaConfigurationException, IllegalCvaCredentialsException {
-        DatabaseCredentials databaseCredentials = CvaConfiguration.getDefaultStorageEngine().getDatabase();
-        //TODO: make this somehow more secure to misconfiguration
-        String host = databaseCredentials.getHosts().get(0).split(":")[0];
-        String port = databaseCredentials.getHosts().get(0).split(":")[1];
-        MongoCredentials mongoCredentials = null;
-        // TODO: com.mongodb.MongoSocketOpenException is not controlled when server not reachable
-        // TODO: com.mongodb.MongoSocketOpenException is not controlled when credentials are incorrect
-        try {
-            mongoCredentials = new MongoCredentials(
-                    host,
-                    Integer.parseInt(port),
-                    CvaConfiguration.getDefaultStorageEngine().getOptions().get("database.name"),
-                    databaseCredentials.getUser(),
-                    databaseCredentials.getPassword(),
-                    true
-            );
-        }
-        catch (IllegalOpenCGACredentialsException ex) {
-            throw new IllegalCvaCredentialsException(ex.getMessage());
+        if (mongoCredentials == null) {
+            DatabaseCredentials databaseCredentials = CvaConfiguration.getDefaultStorageEngine().getDatabase();
+            //TODO: make this somehow more secure to misconfiguration
+            String host = databaseCredentials.getHosts().get(0).split(":")[0];
+            String port = databaseCredentials.getHosts().get(0).split(":")[1];
+            // TODO: com.mongodb.MongoSocketOpenException is not controlled when server not reachable
+            // TODO: com.mongodb.MongoSocketOpenException is not controlled when credentials are incorrect
+            try {
+                mongoCredentials = new MongoCredentials(
+                        host,
+                        Integer.parseInt(port),
+                        CvaConfiguration.getDefaultStorageEngine().getOptions().get("database.name"),
+                        databaseCredentials.getUser(),
+                        databaseCredentials.getPassword(),
+                        true
+                );
+            } catch (IllegalOpenCGACredentialsException ex) {
+                throw new IllegalCvaCredentialsException(ex.getMessage());
+            }
         }
         return mongoCredentials;
     }
@@ -148,10 +156,13 @@ public class CvaConfiguration {
     public static MongoClient getMongoClient()
             throws IllegalCvaConfigurationException, IllegalCvaCredentialsException {
 
-        DatabaseCredentials databaseCredentials = CvaConfiguration.getDefaultStorageEngine().getDatabase();
-        databaseCredentials.getHosts().get(0);
-        MongoClientURI connectionString = new MongoClientURI("mongodb://" + databaseCredentials.getHosts().get(0));
-        return new MongoClient(connectionString);
+        if (mongoClient == null) {
+            DatabaseCredentials databaseCredentials = CvaConfiguration.getDefaultStorageEngine().getDatabase();
+            databaseCredentials.getHosts().get(0);
+            MongoClientURI connectionString = new MongoClientURI("mongodb://" + databaseCredentials.getHosts().get(0));
+            mongoClient = new MongoClient(connectionString);
+        }
+        return mongoClient;
     }
 
     private static CellBaseDirectVariantAnnotator cellBaseDirectVariantAnnotator = null;
@@ -209,6 +220,56 @@ public class CvaConfiguration {
         //TODO: Sanity checks on the Cellbase configuration
         // Either webservices or database connection must be set
         // Should we allow not connecting Cellbase and not annotating mutations in that case??
+    }
+
+    /**
+     * Gets a logger from the config
+     * @return
+     */
+    public static Logger getLogger() {
+        if (logger == null) {
+            PatternLayout layout = new PatternLayout();
+            String conversionPattern = "%-7p %d [%t] %c %x - %m%n";
+            layout.setConversionPattern(conversionPattern);
+
+            // creates console appender
+            ConsoleAppender consoleAppender = new ConsoleAppender();
+            consoleAppender.setLayout(layout);
+            consoleAppender.activateOptions();
+
+            // creates file appender
+            FileAppender fileAppender = new FileAppender();
+            try {
+                String logFile = CvaConfiguration.getInstance().logFile;
+                File logFileFile = new File(logFile);
+                if (! logFileFile.exists()) {
+                    logFileFile.createNewFile();
+                }
+                fileAppender.setFile(CvaConfiguration.getInstance().logFile);
+            } catch (IllegalCvaConfigurationException e) {
+                e.printStackTrace();
+                //throw e;
+            } catch (IOException e) {
+                e.printStackTrace();
+                //throw e;
+            }
+            fileAppender.setLayout(layout);
+            fileAppender.activateOptions();
+
+            // configures the root logger
+            logger = Logger.getRootLogger();
+            try {
+                logger.setLevel(Level.toLevel(CvaConfiguration.getInstance().getLogLevel()));
+            } catch (IllegalCvaConfigurationException e) {
+                e.printStackTrace();
+            }
+            logger.addAppender(consoleAppender);
+            logger.addAppender(fileAppender);
+            logger = Logger.getLogger(CvaConfiguration.class);
+            //BasicConfigurator.configure();
+            logger.info("Logger initialized");
+        }
+        return logger;
     }
 
     /////////////////////////////////////////////////////////////

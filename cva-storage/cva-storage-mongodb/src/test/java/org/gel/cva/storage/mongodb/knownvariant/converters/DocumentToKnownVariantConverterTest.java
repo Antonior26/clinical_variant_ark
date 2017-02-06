@@ -172,7 +172,10 @@ public class DocumentToKnownVariantConverterTest {
             throws VariantAnnotatorException, CvaException{
         // Prepares a known variant
         Variant variant = new Variant(this.chromosome, this.position, this.reference, this.alternate);
-        KnownVariantWrapper knownVariantWrapper = new KnownVariantWrapper(this.submitter, variant);
+        List<KnownVariantWrapper> knownVariantWrappers = KnownVariantWrapper.buildKnownVariant(
+                this.submitter, variant, true);
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(0);
         knownVariantWrapper.getImpl().setEvidences(this.evidences);
         knownVariantWrapper.getImpl().setCurations(this.curations);
         knownVariantWrapper.getImpl().setComments(this.comments);

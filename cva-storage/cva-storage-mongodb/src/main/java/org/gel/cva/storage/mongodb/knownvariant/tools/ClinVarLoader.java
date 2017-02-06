@@ -159,19 +159,21 @@ public class ClinVarLoader {
                 List<EvidenceEntry> evidences = new ArrayList<EvidenceEntry>();
                 evidences.add(evidenceEntry);
                 // Creates a curated variant
-                KnownVariantWrapper knownVariantWrapper = new KnownVariantWrapper(
+                List<KnownVariantWrapper> knownVariantWrappers = KnownVariantWrapper.buildKnownVariant(
                         ClinVarLoader.submitter,
-                        variant
+                        variant,
+                        true
                         );
                 // TODO: add created evidences to KnownVariant
                 // TODO: create an automatic curation status
-
                 // Inserts in Mongo
-                try {
-                    knownVariantMongoDBAdaptor.insert(knownVariantWrapper, null);
-                }
-                catch (MongoWriteException e) {
-                    duplicatedVariants ++;
+                for (KnownVariantWrapper knownVariantWrapper : knownVariantWrappers) {
+                    try {
+                        knownVariantMongoDBAdaptor.insert(knownVariantWrapper, null);
+                    }
+                    catch (MongoWriteException e) {
+                        duplicatedVariants ++;
+                    }
                 }
             }
         } while (!read.isEmpty());

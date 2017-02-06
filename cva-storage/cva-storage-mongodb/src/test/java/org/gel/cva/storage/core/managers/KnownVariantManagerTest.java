@@ -56,13 +56,16 @@ public class KnownVariantManagerTest extends GenericManagerTest<KnownVariantMana
     public void test1() throws VariantAnnotatorException, CvaException{
 
         // Registers a new known variant
-        KnownVariantWrapper knownVariantWrapper = this.manager.createKnownVariant(
+        List<KnownVariantWrapper> knownVariantWrappers = this.manager.createKnownVariant(
                 submitter,
                 chromosome,
                 position,
                 reference,
                 alternate
         );
+        assertNotNull(knownVariantWrappers);
+        assertEquals(1, knownVariantWrappers.size());
+        KnownVariantWrapper knownVariantWrapper = knownVariantWrappers.get(1);
         assertNotNull(knownVariantWrapper);
         assertEquals(this.chromosomeNormalized, knownVariantWrapper.getVariant().getChromosome());
         assertEquals(this.position, knownVariantWrapper.getVariant().getStart());
