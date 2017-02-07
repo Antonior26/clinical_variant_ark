@@ -89,7 +89,7 @@
                             <targetPath>WEB-INF</targetPath>
                         </resource>
                         <resource>
-                            <directory>src/main/resources/</directory>
+                            <directory>../cva-storage/cva-storage-core/src/main/resources/</directory>
                             <filtering>true</filtering>
                             <targetPath></targetPath>
                         </resource>
