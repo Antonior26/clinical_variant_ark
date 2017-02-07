@@ -160,7 +160,7 @@ public class KnownVariantMongoDBAdaptor implements KnownVariantDBAdaptor {
                     position,
                     reference,
                     alternate,
-                    false
+                    true
             );
         }
         catch (VariantAnnotatorException ex) {
